@@ -15,6 +15,8 @@ export function blankState(): GameState {
     history: [],
     lastSpin: null,
     celebration: null,
+    spinRequested: false,
+    marks: [],
     version: 1,
   }
 }
@@ -23,6 +25,8 @@ function loadState(): GameState {
   try {
     const s = JSON.parse(readFileSync(DATA_FILE, 'utf8')) as GameState
     if (!Array.isArray(s.players) || typeof s.version !== 'number') return blankState()
+    s.spinRequested ??= false
+    if (!Array.isArray(s.marks)) s.marks = []
     return s
   } catch {
     return blankState()

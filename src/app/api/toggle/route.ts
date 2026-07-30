@@ -10,6 +10,9 @@ export async function POST(req: Request) {
   if (!player?.cells || !cell || cell.free) return bad(400, 'bad toggle')
   const hadBingo = hasBingo(player.cells)
   cell.marked = !cell.marked
+  if (cell.marked) {
+    state.marks = [{ player: player.name, text: cell.text, ts: Date.now() }, ...state.marks].slice(0, 6)
+  }
   if (!hadBingo && hasBingo(player.cells)) {
     state.celebration = { name: player.name, ts: Date.now() }
   }

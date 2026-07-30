@@ -45,6 +45,30 @@ export function useGame(intervalMs = 1000) {
   return { state, post, offline }
 }
 
+export function useWakeLock() {
+  useEffect(() => {
+    if (!('wakeLock' in navigator)) return
+    let sentinel: WakeLockSentinel | null = null
+    const acquire = () => {
+      navigator.wakeLock
+        .request('screen')
+        .then((s) => {
+          sentinel = s
+        })
+        .catch(() => {})
+    }
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') acquire()
+    }
+    acquire()
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible)
+      sentinel?.release().catch(() => {})
+    }
+  }, [])
+}
+
 export function openOnTv(url: string) {
   fetch('/api/open', {
     method: 'POST',

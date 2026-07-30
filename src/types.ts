@@ -47,6 +47,12 @@ export type GamePlayer = {
   cells: Cell[] | null // null until the player submits their card
 }
 
+export type MarkEvent = {
+  player: string
+  text: string
+  ts: number
+}
+
 export type GameState = {
   phase: 'setup' | 'play'
   players: GamePlayer[]
@@ -54,5 +60,7 @@ export type GameState = {
   history: Spin[]
   lastSpin: Spin | null
   celebration: { name: string; ts: number } | null
+  spinRequested: boolean // current player asked the TV to spin
+  marks: MarkEvent[]
   version: number
 }

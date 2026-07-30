@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
-import { openOnTv, useGame, useJoinBase } from '@/lib/gameClient'
+import { useEffect, useRef, useState } from 'react'
+import { openOnTv, useGame, useJoinBase, useWakeLock } from '@/lib/gameClient'
 import { SEGMENTS, ytUrl } from '../data/patterns'
-import { hasBingo } from '../data/challenges'
+import { bestLineProgress, hasBingo } from '../data/challenges'
+import { fanfare, initSoundUnlock, markTick } from '../lib/sound'
 import type { GamePlayer, Segment, Spin } from '../types'
 import { Wheel } from '../components/Wheel'
+import type { WheelHandle } from '../components/Wheel'
 import { BingoCard } from '../components/BingoCard'
 import { QR } from '../components/QR'
 
@@ -44,13 +46,34 @@ export function HostView() {
   const [copied, setCopied] = useState(false)
   const [inspectId, setInspectId] = useState<string | null>(null)
   const [showLinks, setShowLinks] = useState(false)
+  const wheelRef = useRef<WheelHandle>(null)
+
+  useWakeLock()
+  useEffect(() => initSoundUnlock(), [])
 
   const celebrationTs = state?.celebration?.ts
   useEffect(() => {
     if (!celebrationTs) return
+    fanfare()
     const t = setTimeout(() => post('/celebration/clear'), 9000)
     return () => clearTimeout(t)
   }, [celebrationTs, post])
+
+  // a phone asked for a spin; no-ops while the wheel is already spinning
+  const spinRequested = state?.spinRequested
+  useEffect(() => {
+    if (spinRequested) wheelRef.current?.spin()
+  }, [spinRequested, state?.version])
+
+  const lastMarkTs = state?.marks[0]?.ts
+  const markSeen = useRef(false)
+  useEffect(() => {
+    if (!markSeen.current) {
+      markSeen.current = true // skip marks already present at page load
+      return
+    }
+    if (lastMarkTs) markTick()
+  }, [lastMarkTs])
 
   if (!state) {
     return (
@@ -193,10 +216,10 @@ export function HostView() {
 
       <main className="layout">
         <section className="panel wheel-panel">
-          <Wheel segments={SEGMENTS} disabled={false} onLand={handleLand} spinLabel="SPIN" />
+          <Wheel ref={wheelRef} segments={SEGMENTS} disabled={false} onLand={handleLand} spinLabel="SPIN" />
 
           {lastSpin ? (
-            <div className="spin-result">
+            <div className="spin-result" key={`${lastSpin.player}-${lastSpin.query}`}>
               <div className="spin-meta">
                 <span className="spin-seg">{lastSpin.emoji} {lastSpin.segmentLabel}</span>
                 <span className="spin-map">{lastSpin.map}</span>
@@ -257,6 +280,7 @@ export function HostView() {
             {state.players.map((p, i) => {
               const marks = p.cells?.filter((c) => c.marked && !c.free).length ?? 0
               const bingo = p.cells ? hasBingo(p.cells) : false
+              const best = !bingo && p.cells ? bestLineProgress(p.cells) : 0
               return (
                 <button
                   key={p.id}
@@ -269,6 +293,7 @@ export function HostView() {
                 >
                   <span className="status-turn">{i === state.current ? '🎯' : ''}</span>
                   <span className="status-name">{p.name}</span>
+                  {best >= 4 && <span className="status-danger">🔥 4/5</span>}
                   <span className="status-info">
                     {bingo ? '🏆 BINGÓ' : p.cells ? `${marks}/24 jelölve` : '✍️ kártyát ír…'}
                   </span>
@@ -289,6 +314,14 @@ export function HostView() {
           )}
         </section>
       </main>
+
+      <div className="mark-toasts">
+        {state.marks.map((m) => (
+          <div key={`${m.ts}-${m.player}`} className="mark-toast">
+            ✓ <b>{m.player}</b>: „{m.text}”
+          </div>
+        ))}
+      </div>
 
       {state.celebration && (
         <div className="celebration" onClick={() => post('/celebration/clear')}>

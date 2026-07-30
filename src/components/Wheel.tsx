@@ -1,12 +1,19 @@
-import { useRef, useState } from 'react'
+import { useImperativeHandle, useRef, useState } from 'react'
+import type { Ref } from 'react'
 import type { Segment } from '../types'
+import { land, wheelTicks, whoosh } from '../lib/sound'
+
+export type WheelHandle = { spin: () => void }
 
 type Props = {
   segments: Segment[]
   disabled: boolean
   onLand: (segment: Segment) => void
   spinLabel: string
+  ref?: Ref<WheelHandle>
 }
+
+const SPIN_S = 4.4
 
 const CX = 210
 const CY = 210
@@ -26,9 +33,10 @@ function segmentPath(i: number, total: number): string {
   return `M ${CX} ${CY} L ${p0.x} ${p0.y} A ${R} ${R} 0 0 1 ${p1.x} ${p1.y} Z`
 }
 
-export function Wheel({ segments, disabled, onLand, spinLabel }: Props) {
+export function Wheel({ segments, disabled, onLand, spinLabel, ref }: Props) {
   const [rot, setRot] = useState(0)
   const [spinning, setSpinning] = useState(false)
+  const [landedId, setLandedId] = useState<string | null>(null)
   const targetRef = useRef<Segment | null>(null)
   const seg = 360 / segments.length
 
@@ -43,11 +51,18 @@ export function Wheel({ segments, disabled, onLand, spinLabel }: Props) {
       ((targetAngle - current + 360) % 360) + 360 * (4 + Math.floor(Math.random() * 3))
     setRot(rot + delta)
     setSpinning(true)
+    setLandedId(null)
+    whoosh()
+    wheelTicks(SPIN_S, Math.floor(delta / seg))
   }
+
+  useImperativeHandle(ref, () => ({ spin }))
 
   const handleEnd = () => {
     if (!spinning) return
     setSpinning(false)
+    setLandedId(targetRef.current?.id ?? null)
+    land()
     if (targetRef.current) onLand(targetRef.current)
   }
 
@@ -59,7 +74,7 @@ export function Wheel({ segments, disabled, onLand, spinLabel }: Props) {
         style={{
           transform: `rotate(${rot}deg)`,
           transition: spinning
-            ? 'transform 4.4s cubic-bezier(0.14, 0.82, 0.09, 1)'
+            ? `transform ${SPIN_S}s cubic-bezier(0.14, 0.82, 0.09, 1)`
             : 'none',
         }}
         onTransitionEnd={handleEnd}
@@ -67,7 +82,14 @@ export function Wheel({ segments, disabled, onLand, spinLabel }: Props) {
         <svg viewBox="0 0 420 420" className="wheel-svg" role="img" aria-label="Rulettkerék">
           <circle cx={CX} cy={CY} r={R + 8} fill="#0c0e15" stroke="#d4af37" strokeWidth="4" />
           {segments.map((s, i) => (
-            <path key={s.id} d={segmentPath(i, segments.length)} fill={s.color} stroke="#0c0e15" strokeWidth="1.5" />
+            <path
+              key={s.id}
+              d={segmentPath(i, segments.length)}
+              fill={s.color}
+              stroke="#0c0e15"
+              strokeWidth="1.5"
+              className={landedId === s.id ? 'is-landed' : undefined}
+            />
           ))}
           {segments.map((s, i) => (
             <g key={s.id} transform={`rotate(${i * seg + seg / 2} ${CX} ${CY})`}>

@@ -129,3 +129,13 @@ export function winningCells(cells: Cell[]): Set<number> {
 }
 
 export const hasBingo = (cells: Cell[]) => winningCells(cells).size > 0
+
+/** Marked-cell count of the player's most complete line (0–5) */
+export function bestLineProgress(cells: Cell[]): number {
+  let best = 0
+  for (const line of LINES) {
+    const n = line.filter((i) => cells[i]?.marked).length
+    if (n > best) best = n
+  }
+  return best
+}
