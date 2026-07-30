@@ -44,11 +44,14 @@ export type Spin = SpinQuery & {
 export type GamePlayer = {
   id: string
   name: string
+  color: string
+  wins: number
   cells: Cell[] | null // null until the player submits their card
 }
 
 export type MarkEvent = {
   player: string
+  color: string
   text: string
   ts: number
 }
@@ -61,6 +64,7 @@ export type GameState = {
   lastSpin: Spin | null
   celebration: { name: string; ts: number } | null
   spinRequested: boolean // current player asked the TV to spin
+  roundWonBy: string | null // player id of this round's first bingo
   marks: MarkEvent[]
   version: number
 }

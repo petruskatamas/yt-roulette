@@ -24,7 +24,7 @@ function JoinGrid({ players }: { players: GamePlayer[] }) {
           const url = `${joinBase ?? ''}/#/p/${p.id}`
           return (
             <div key={p.id} className="join-card">
-              <div className="join-name">
+              <div className="join-name" style={{ color: p.color }}>
                 {p.name} {p.cells ? '✅' : '✍️'}
               </div>
               {joinBase && <QR text={url} />}
@@ -46,6 +46,11 @@ export function HostView() {
   const [copied, setCopied] = useState(false)
   const [inspectId, setInspectId] = useState<string | null>(null)
   const [showLinks, setShowLinks] = useState(false)
+  const [confirmBox, setConfirmBox] = useState<{
+    text: string
+    label: string
+    action: () => void
+  } | null>(null)
   const wheelRef = useRef<WheelHandle>(null)
 
   useWakeLock()
@@ -53,11 +58,8 @@ export function HostView() {
 
   const celebrationTs = state?.celebration?.ts
   useEffect(() => {
-    if (!celebrationTs) return
-    fanfare()
-    const t = setTimeout(() => post('/celebration/clear'), 9000)
-    return () => clearTimeout(t)
-  }, [celebrationTs, post])
+    if (celebrationTs) fanfare()
+  }, [celebrationTs])
 
   // a phone asked for a spin; no-ops while the wheel is already spinning
   const spinRequested = state?.spinRequested
@@ -183,154 +185,191 @@ export function HostView() {
     }
   }
 
-  const newGame = () => {
-    if (!confirm('Mindenkinek véget ér a játék, és újat kezdtek. Biztos?')) return
-    post('/reset')
-    setInspectId(null)
-  }
+  const newGame = () =>
+    setConfirmBox({
+      text: 'Mindenkinek véget ér a játék: játékosok, kártyák, győzelmek törlődnek. Biztos?',
+      label: 'Új játék',
+      action: () => {
+        post('/reset')
+        setInspectId(null)
+      },
+    })
+
+  const winner = state.players.find((p) => p.id === state.roundWonBy)
 
   return (
-    <div className="game-screen">
+    <div className="tv-screen">
       <header className="topbar">
         <h1 className="logo logo-small">
-          <span className="logo-yt">YT</span> RULETT
+          <span className="logo-yt">YT</span> ROULETTE
         </h1>
-        <div className="turn-indicator">
-          🎯 Következik: <b>{spinner?.name}</b>
-        </div>
+        {offline && <span className="offline-note">⚠️ megszakadt a kapcsolat…</span>}
         <div className="topbar-actions">
-          <button className="btn btn-ghost" onClick={() => setShowLinks((s) => !s)}>
-            {showLinks ? 'Linkek elrejtése' : 'Csatlakozási linkek'}
+          <button className="btn btn-ghost" onClick={() => setShowLinks(true)}>
+            Csatlakozás
           </button>
           <button className="btn btn-ghost" onClick={newGame}>Új játék</button>
         </div>
       </header>
 
-      {offline && <div className="offline-note">⚠️ megszakadt a kapcsolat a játékszerverrel…</div>}
-
-      {showLinks && (
-        <div className="panel links-panel">
-          <JoinGrid players={state.players} />
-        </div>
-      )}
-
-      <main className="layout">
-        <section className="panel wheel-panel">
+      <main className="tv-main">
+        <section className="panel tv-wheel-panel">
           <Wheel ref={wheelRef} segments={SEGMENTS} disabled={false} onLand={handleLand} spinLabel="SPIN" />
-
-          {lastSpin ? (
-            <div className="spin-result" key={`${lastSpin.player}-${lastSpin.query}`}>
-              <div className="spin-meta">
-                <span className="spin-seg">{lastSpin.emoji} {lastSpin.segmentLabel}</span>
-                <span className="spin-map">{lastSpin.map}</span>
-                <span className="spin-player">pörgette: {lastSpin.player}</span>
-              </div>
-              <button className="spin-query" onClick={copyQuery} title="Kattints a másoláshoz">
-                {lastSpin.query}
-                <span className="copy-hint">{copied ? '✓ másolva' : '⧉'}</span>
-              </button>
-              <div className="spin-actions">
-                <button
-                  className="btn btn-primary"
-                  onClick={() => openOnTv(ytUrl(lastSpin.query, lastSpin.sort))}
-                >
-                  ▶ Keresés a YouTube-on 🕶
-                </button>
-                <button className="btn" onClick={reroll}>🎲 Új számok</button>
-              </div>
-              {lastSpin.sort === 'date' && (
-                <div className="spin-note">feltöltési idő szerint rendezve — a legújabb elöl</div>
-              )}
-              <p className="spin-tip">{lastSpin.tip}</p>
-            </div>
-          ) : (
-            <p className="spin-placeholder">
-              Pörgesd meg a kerekét — keresést generál a YouTube lomtárába:
-              alapértelmezett fájlnevű, cím nélküli, ~0 megtekintésű videókra.
-            </p>
-          )}
-
-          {state.history.length > 1 && (
-            <details className="history">
-              <summary>Pörgetések ({state.history.length})</summary>
-              <ul>
-                {state.history.slice(1).map((h, i) => (
-                  <li key={i}>
-                    <span>{h.emoji}</span>
-                    <a
-                      href={ytUrl(h.query, h.sort)}
-                      onClick={(e) => {
-                        e.preventDefault()
-                        openOnTv(ytUrl(h.query, h.sort))
-                      }}
-                    >
-                      {h.query}
-                    </a>
-                    <span className="history-player">{h.player}</span>
-                  </li>
-                ))}
-              </ul>
-            </details>
-          )}
         </section>
 
-        <section className="panel cards-panel">
-          <h2 className="panel-title">Játékosok</h2>
-          <div className="status-list">
-            {state.players.map((p, i) => {
-              const marks = p.cells?.filter((c) => c.marked && !c.free).length ?? 0
-              const bingo = p.cells ? hasBingo(p.cells) : false
-              const best = !bingo && p.cells ? bestLineProgress(p.cells) : 0
-              return (
-                <button
-                  key={p.id}
-                  className={[
-                    'status-item',
-                    bingo ? 'has-bingo' : '',
-                    inspectId === p.id ? 'is-active' : '',
-                  ].join(' ')}
-                  onClick={() => setInspectId(inspectId === p.id ? null : p.id)}
-                >
-                  <span className="status-turn">{i === state.current ? '🎯' : ''}</span>
-                  <span className="status-name">{p.name}</span>
-                  {best >= 4 && <span className="status-danger">🔥 4/5</span>}
-                  <span className="status-info">
-                    {bingo ? '🏆 BINGÓ' : p.cells ? `${marks}/24 jelölve` : '✍️ kártyát ír…'}
-                  </span>
+        <section className="tv-side">
+          <div className="panel tv-spin">
+            {lastSpin ? (
+              <div className="spin-result" key={`${lastSpin.player}-${lastSpin.query}`}>
+                <div className="spin-meta">
+                  <span className="spin-seg">{lastSpin.emoji} {lastSpin.segmentLabel}</span>
+                  <span className="spin-map">{lastSpin.map}</span>
+                  <span className="spin-player">pörgette: {lastSpin.player}</span>
+                </div>
+                <button className="spin-query" onClick={copyQuery} title="Kattints a másoláshoz">
+                  {lastSpin.query}
+                  <span className="copy-hint">{copied ? '✓ másolva' : '⧉'}</span>
                 </button>
-              )
-            })}
+                <div className="spin-actions">
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => openOnTv(ytUrl(lastSpin.query, lastSpin.sort))}
+                  >
+                    Keresés a YouTube-on
+                  </button>
+                  <button className="btn" onClick={reroll}>🎲 Új számok</button>
+                </div>
+                {lastSpin.sort === 'date' && (
+                  <div className="spin-note">feltöltési idő szerint rendezve — a legújabb elöl</div>
+                )}
+                <p className="spin-tip">{lastSpin.tip}</p>
+              </div>
+            ) : (
+              <p className="spin-placeholder">
+                Pörgesd meg a kereket!
+              </p>
+            )}
           </div>
 
-          {inspected?.cells ? (
-            <div className="inspect">
-              <div className="inspect-title">{inspected.name} kártyája</div>
-              <BingoCard cells={inspected.cells} readOnly />
+          <div className="panel tv-players">
+            <h2 className="panel-title">Játékosok</h2>
+            <div className="status-list">
+              {state.players.map((p, i) => {
+                const marks = p.cells?.filter((c) => c.marked && !c.free).length ?? 0
+                const bingo = p.cells ? hasBingo(p.cells) : false
+                const best = !bingo && p.cells ? bestLineProgress(p.cells) : 0
+                return (
+                  <button
+                    key={p.id}
+                    className={['status-item', bingo ? 'has-bingo' : ''].join(' ')}
+                    onClick={() => setInspectId(p.id)}
+                  >
+                    <span className="status-turn">{i === state.current ? '🎯' : ''}</span>
+                    <span className="status-dot" style={{ background: p.color }} />
+                    <span className="status-name">
+                      {p.name}
+                      {p.wins > 0 && <span className="status-wins"> 🏆{p.wins}</span>}
+                    </span>
+                    {best >= 4 && <span className="status-danger">🔥 4/5</span>}
+                    <span className="status-info">
+                      {bingo ? '🏆 BINGÓ' : p.cells ? `${marks}/24 jelölve` : '✍️ kártyát ír…'}
+                    </span>
+                  </button>
+                )
+              })}
             </div>
-          ) : (
-            <p className="hint inspect-hint">
-              Koppints egy játékosra, hogy belenézz a kártyájába — pl. vitás kockák elbírálásához.
-            </p>
-          )}
+          </div>
         </section>
       </main>
 
       <div className="mark-toasts">
         {state.marks.map((m) => (
           <div key={`${m.ts}-${m.player}`} className="mark-toast">
-            ✓ <b>{m.player}</b>: „{m.text}”
+            ✓ <b style={{ color: m.color }}>{m.player}</b>: „{m.text}”
           </div>
         ))}
       </div>
 
-      {state.celebration && (
-        <div className="celebration" onClick={() => post('/celebration/clear')}>
+      {inspected && (
+        <div className="editor-overlay" onClick={() => setInspectId(null)}>
+          <div className="editor-card inspect-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="inspect-title">
+              <span style={{ color: inspected.color }}>{inspected.name}</span> kártyája
+              {inspected.wins > 0 && <span className="status-wins"> 🏆{inspected.wins}</span>}
+            </div>
+            {inspected.cells ? (
+              <BingoCard cells={inspected.cells} readOnly />
+            ) : (
+              <p className="hint">✍️ Még írja a kártyáját…</p>
+            )}
+            <button className="btn" onClick={() => setInspectId(null)}>Bezárás</button>
+          </div>
+        </div>
+      )}
+
+      {showLinks && (
+        <div className="editor-overlay" onClick={() => setShowLinks(false)}>
+          <div className="editor-card dialog-wide" onClick={(e) => e.stopPropagation()}>
+            <JoinGrid players={state.players} />
+            <button className="btn" onClick={() => setShowLinks(false)}>Bezárás</button>
+          </div>
+        </div>
+      )}
+
+      {confirmBox && (
+        <div className="editor-overlay" onClick={() => setConfirmBox(null)}>
+          <div className="editor-card" onClick={(e) => e.stopPropagation()}>
+            <p className="confirm-text">{confirmBox.text}</p>
+            <div className="editor-actions">
+              <button className="btn" onClick={() => setConfirmBox(null)}>Mégse</button>
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  confirmBox.action()
+                  setConfirmBox(null)
+                }}
+              >
+                {confirmBox.label}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {winner && (
+        <div className="celebration">
           <div className="celebration-inner">
             <div className="celebration-confetti">🎉 🎰 🎉</div>
             <div className="celebration-title">B I N G Ó !</div>
-            <div className="celebration-name">{state.celebration.name}</div>
-            <div className="celebration-sub">a lomtár nem okozott csalódást</div>
-            <div className="hint">koppints bárhová a bezáráshoz</div>
+            <div className="celebration-name" style={{ color: winner.color }}>
+              {winner.name}
+            </div>
+            {winner.cells && (
+              <div className="celebration-card">
+                <BingoCard cells={winner.cells} readOnly />
+              </div>
+            )}
+            <div className="celebration-actions">
+              <button
+                className="btn btn-primary"
+                onClick={() => post('/round', { redeal: false })}
+              >
+                Új kör (kártyák maradnak)
+              </button>
+              <button
+                className="btn"
+                onClick={() =>
+                  setConfirmBox({
+                    text: 'Új kör új kártyákkal — mindenki újraírja a sajátját a telefonján. Mehet?',
+                    label: 'Új kártyák',
+                    action: () => post('/round', { redeal: true }),
+                  })
+                }
+              >
+                Új kör új kártyákkal
+              </button>
+              <button className="btn btn-ghost" onClick={newGame}>Új játék</button>
+            </div>
           </div>
         </div>
       )}

@@ -164,12 +164,12 @@ function CardBuilder({
   return (
     <div className="player-screen">
       <header className="pheader">
-        <div className="pname">✍️ {player.name}</div>
+        <div className="pname" style={{ color: player.color }}>✍️ {player.name}</div>
         <div className="hint">írd meg a bingókártyád</div>
       </header>
 
       <p className="builder-intro">
-        24 dolog, amire fogadsz, hogy ma este felbukkan a nulla nézettségű videókban.
+        24 dolog, amire fogadsz, hogy ma este felbukkan a videókban.
         Koppints egy kockára a szerkesztéshez, húzd egy másikra a cseréhez.
         A sarkok és az átlók több vonalban számítanak — oda tedd a tutikat.
       </p>
@@ -311,15 +311,12 @@ export function PlayerView({ playerId }: { playerId: string }) {
   }
 
   return (
-    <div className="player-screen">
+    <div className="player-screen pview">
+      <div className="pcenter">
       <header className="pheader">
-        <div className="pname">{me.name}</div>
-        <div className={`pturn ${myTurn ? 'is-me' : ''}`}>
-          {state.phase === 'setup'
-            ? 'várunk, hogy a házigazda elindítsa…'
-            : myTurn
-              ? '🎯 te jössz!'
-              : `🎯 ${spinner?.name} pörget`}
+        <div className="pname" style={{ color: me.color }}>
+          {me.name}
+          {me.wins > 0 && <span className="pwins"> 🏆{me.wins}</span>}
         </div>
       </header>
 
@@ -329,7 +326,7 @@ export function PlayerView({ playerId }: { playerId: string }) {
           disabled={state.spinRequested}
           onClick={() => post('/spin/request', { playerId })}
         >
-          {state.spinRequested ? '🎡 pörög a TV-n…' : '🎡 PÖRGESD MEG!'}
+          {state.spinRequested ? 'SPINNING…' : 'SPIN!'}
         </button>
       )}
 
@@ -340,7 +337,7 @@ export function PlayerView({ playerId }: { playerId: string }) {
       )}
 
       {iWon && !state.celebration && (
-        <div className="mini-celebration">🏆 BINGÓD van — kiálts!</div>
+        <div className="mini-celebration">🏆 BINGÓ 🏆</div>
       )}
 
       {lastSpin && (
@@ -361,6 +358,7 @@ export function PlayerView({ playerId }: { playerId: string }) {
       <div className="pfooter">
         <span className="hint">{marks}/24 jelölve · koppints a kockára, ha kiszúrtad</span>
         {offline && <span className="offline-note">⚠️ újracsatlakozás…</span>}
+      </div>
       </div>
     </div>
   )

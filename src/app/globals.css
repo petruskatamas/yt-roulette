@@ -211,10 +211,16 @@ button {
 
 /* ————— game layout ————— */
 
-.game-screen {
-  max-width: 1500px;
-  margin: 0 auto;
-  padding: 1rem 1.2rem 3rem;
+/* ————— TV screen: fixed-viewport dashboard, no scrolling ————— */
+
+.tv-screen {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 0.9rem 1.1rem;
+  overflow: hidden;
 }
 
 .topbar {
@@ -222,32 +228,7 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.turn-indicator {
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 0.45rem 1.1rem;
-  font-size: 0.95rem;
-}
-
-.turn-indicator b {
-  color: var(--gold);
-}
-
-.bingo-banner {
-  background: linear-gradient(90deg, rgba(53, 209, 137, 0.15), rgba(212, 175, 55, 0.2), rgba(53, 209, 137, 0.15));
-  border: 1px solid var(--green-bright);
-  color: var(--green-bright);
-  border-radius: 14px;
-  text-align: center;
-  font-size: 1.15rem;
-  font-weight: 800;
-  padding: 0.9rem;
-  margin-bottom: 1rem;
-  animation: banner-pulse 1.2s ease-in-out infinite alternate;
+  flex-shrink: 0;
 }
 
 @keyframes banner-pulse {
@@ -255,17 +236,79 @@ button {
   to { box-shadow: 0 0 28px rgba(53, 209, 137, 0.55); }
 }
 
-.layout {
+.tv-main {
+  flex: 1;
+  min-height: 0;
   display: grid;
-  grid-template-columns: 3fr 1fr;
-  gap: 1.2rem;
-  align-items: start;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
 }
 
-@media (max-width: 900px) {
-  .layout {
+.tv-wheel-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.tv-wheel-panel .wheel-wrap {
+  width: min(44vw, calc(100dvh - 240px), 760px);
+}
+
+.tv-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 0;
+}
+
+.tv-spin .spin-result {
+  margin: 0;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.tv-spin .spin-placeholder {
+  margin: 0 auto;
+}
+
+.tv-players {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.tv-players .status-list {
+  margin-bottom: 0;
+}
+
+/* small windows: fall back to a scrolling single column */
+@media (max-width: 980px) {
+  .tv-screen {
+    height: auto;
+    overflow: visible;
+  }
+  .tv-main {
     grid-template-columns: 1fr;
   }
+  .tv-wheel-panel .wheel-wrap {
+    width: min(100%, 62vh);
+  }
+}
+
+.inspect-dialog {
+  width: min(94vw, 560px);
+}
+
+.inspect-dialog .bingo-cell {
+  font-size: 0.8rem;
+}
+
+.dialog-wide {
+  width: min(94vw, 760px);
+  max-height: 88vh;
+  overflow-y: auto;
 }
 
 .panel {
@@ -273,14 +316,6 @@ button {
   border: 1px solid var(--border);
   border-radius: 18px;
   padding: 1.2rem;
-}
-
-/* ————— wheel ————— */
-
-.wheel-panel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
 .wheel-wrap {
@@ -424,91 +459,7 @@ button {
   max-width: 34ch;
 }
 
-/* ————— history ————— */
-
-.history {
-  width: 100%;
-  margin-top: 1rem;
-  color: var(--text-dim);
-  font-size: 0.85rem;
-}
-
-.history summary {
-  cursor: pointer;
-}
-
-.history ul {
-  list-style: none;
-  padding: 0;
-  margin: 0.6rem 0 0;
-  max-height: 200px;
-  overflow-y: auto;
-}
-
-.history li {
-  display: flex;
-  gap: 0.5rem;
-  align-items: baseline;
-  padding: 0.25rem 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.history a {
-  color: var(--text);
-  text-decoration: none;
-  font-family: ui-monospace, Menlo, monospace;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1;
-}
-
-.history a:hover {
-  color: var(--gold);
-}
-
-.history-player {
-  flex-shrink: 0;
-}
-
 /* ————— bingo cards ————— */
-
-.card-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.card-tab {
-  background: var(--bg-raised);
-  border: 1px solid var(--border);
-  color: var(--text-dim);
-  border-radius: 999px;
-  padding: 0.4rem 0.9rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-}
-
-.card-tab.is-active {
-  color: var(--text);
-  border-color: var(--gold);
-}
-
-.card-tab.has-bingo {
-  border-color: var(--green-bright);
-  color: var(--green-bright);
-}
-
-.tab-count {
-  background: var(--bg);
-  border-radius: 999px;
-  font-size: 0.75rem;
-  padding: 0.1rem 0.5rem;
-}
 
 .bingo-grid {
   display: grid;
@@ -563,14 +514,6 @@ button {
   to { box-shadow: 0 0 14px rgba(53, 209, 137, 0.7); }
 }
 
-.card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 0.9rem;
-  gap: 1rem;
-}
-
 /* ————— misc chrome ————— */
 
 .center-note {
@@ -602,10 +545,6 @@ button {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-dim);
-}
-
-.links-panel {
-  margin-bottom: 1.2rem;
 }
 
 /* ————— join links & QR ————— */
@@ -709,12 +648,6 @@ button {
   color: var(--text-dim);
 }
 
-.inspect-hint {
-  display: block;
-  text-align: center;
-  margin-top: 1.4rem;
-}
-
 .bingo-cell.is-readonly {
   cursor: default;
 }
@@ -755,8 +688,28 @@ button {
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  align-items: center;
+  gap: 0.7rem;
+  max-height: 94vh;
+  overflow-y: auto;
+  padding: 1rem;
   animation: celebration-pop 0.5s cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+
+.celebration-card {
+  width: min(52vh, 440px);
+}
+
+.celebration-card .bingo-cell {
+  font-size: 0.62rem;
+}
+
+.celebration-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.7rem;
+  margin-top: 0.4rem;
 }
 
 @keyframes celebration-pop {
@@ -812,6 +765,19 @@ button {
   max-width: 520px;
   margin: 0 auto;
   padding: 1rem 0.9rem 3rem;
+}
+
+/* card view: vertically centered when it fits, natural scroll when it doesn't */
+.pview {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 1.2rem;
+}
+
+.pcenter {
+  margin: auto 0;
 }
 
 .pheader {
@@ -931,6 +897,28 @@ button {
 @keyframes result-pop {
   from { transform: scale(0.92); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
+}
+
+.status-dot {
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-wins {
+  color: var(--gold);
+  font-size: 0.85em;
+}
+
+.pwins {
+  color: var(--gold);
+  font-size: 0.8em;
+}
+
+.confirm-text {
+  margin: 0;
+  line-height: 1.5;
 }
 
 .status-danger {
@@ -1061,7 +1049,6 @@ button {
 
 /* couch-distance readability on big screens */
 @media (min-width: 1400px) {
-  .turn-indicator { font-size: 1.2rem; padding: 0.6rem 1.4rem; }
   .spin-seg { font-size: 1.35rem; }
   .spin-meta, .spin-tip { font-size: 1rem; }
   .spin-query { font-size: 1.5rem; }

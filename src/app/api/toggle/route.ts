@@ -11,10 +11,17 @@ export async function POST(req: Request) {
   const hadBingo = hasBingo(player.cells)
   cell.marked = !cell.marked
   if (cell.marked) {
-    state.marks = [{ player: player.name, text: cell.text, ts: Date.now() }, ...state.marks].slice(0, 6)
+    state.marks = [
+      { player: player.name, color: player.color, text: cell.text, ts: Date.now() },
+      ...state.marks,
+    ].slice(0, 6)
   }
   if (!hadBingo && hasBingo(player.cells)) {
     state.celebration = { name: player.name, ts: Date.now() }
+    if (!state.roundWonBy) {
+      state.roundWonBy = player.id
+      player.wins++
+    }
   }
   bump()
   return ok()

@@ -7,6 +7,11 @@ import type { GameState } from '../types'
 const DATA_DIR = join(process.cwd(), '.game')
 const DATA_FILE = join(DATA_DIR, 'state.json')
 
+export const PLAYER_COLORS = [
+  '#ff595e', '#ffca3a', '#8ac926', '#1982c4',
+  '#f15bb5', '#ff924c', '#52e3c2', '#6a8ff2',
+]
+
 export function blankState(): GameState {
   return {
     phase: 'setup',
@@ -16,6 +21,7 @@ export function blankState(): GameState {
     lastSpin: null,
     celebration: null,
     spinRequested: false,
+    roundWonBy: null,
     marks: [],
     version: 1,
   }
@@ -26,7 +32,13 @@ function loadState(): GameState {
     const s = JSON.parse(readFileSync(DATA_FILE, 'utf8')) as GameState
     if (!Array.isArray(s.players) || typeof s.version !== 'number') return blankState()
     s.spinRequested ??= false
+    s.roundWonBy ??= null
     if (!Array.isArray(s.marks)) s.marks = []
+    s.marks.forEach((m) => { m.color ??= '#35d189' })
+    s.players.forEach((p, i) => {
+      p.wins ??= 0
+      p.color ??= PLAYER_COLORS[i % PLAYER_COLORS.length]
+    })
     return s
   } catch {
     return blankState()

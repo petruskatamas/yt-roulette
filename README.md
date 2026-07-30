@@ -1,4 +1,4 @@
-# 🎰 YT Rulett — Zero-View Bingo
+# 🎰 YT ROULETTE — Zero-View Bingo
 
 A party game for digging through **YouTube's Recycle Bin**: the millions of videos
 with default filenames, no real titles, and ~0 views that the algorithm will never
