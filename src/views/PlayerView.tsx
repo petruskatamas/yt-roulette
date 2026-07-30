@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { RefObject } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -40,7 +41,7 @@ function BuilderCell({
   index: number
   text: string
   onTap: (index: number) => void
-  suppressClick: React.RefObject<boolean>
+  suppressClick: RefObject<boolean>
 }) {
   const drag = useDraggable({ id: index })
   const drop = useDroppable({ id: index })

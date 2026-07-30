@@ -17,7 +17,6 @@ export function blankState(): GameState {
     phase: 'setup',
     players: [],
     current: 0,
-    history: [],
     lastSpin: null,
     celebration: null,
     spinRequested: false,
@@ -35,6 +34,7 @@ function loadState(): GameState {
     s.roundWonBy ??= null
     if (!Array.isArray(s.marks)) s.marks = []
     s.marks.forEach((m) => { m.color ??= '#35d189' })
+    delete (s as GameState & { history?: unknown }).history
     s.players.forEach((p, i) => {
       p.wins ??= 0
       p.color ??= PLAYER_COLORS[i % PLAYER_COLORS.length]

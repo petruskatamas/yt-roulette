@@ -60,7 +60,6 @@ export type GameState = {
   phase: 'setup' | 'play'
   players: GamePlayer[]
   current: number
-  history: Spin[]
   lastSpin: Spin | null
   celebration: { name: string; ts: number } | null
   spinRequested: boolean // current player asked the TV to spin

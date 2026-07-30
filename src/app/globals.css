@@ -614,10 +614,6 @@ button {
   text-align: left;
 }
 
-.status-item.is-active {
-  border-color: var(--gold);
-}
-
 .status-item.has-bingo {
   border-color: var(--green-bright);
   box-shadow: 0 0 12px rgba(53, 209, 137, 0.25);
@@ -741,12 +737,6 @@ button {
   color: var(--gold);
 }
 
-.celebration-sub {
-  color: var(--text-dim);
-  font-style: italic;
-  font-size: 1.1rem;
-}
-
 .mini-celebration {
   background: rgba(53, 209, 137, 0.15);
   border: 1px solid var(--green-bright);
@@ -793,17 +783,6 @@ button {
   font-size: 1.4rem;
   font-weight: 900;
   color: var(--gold);
-}
-
-.pturn {
-  color: var(--text-dim);
-  font-size: 0.85rem;
-}
-
-.pturn.is-me {
-  color: var(--red-bright);
-  font-weight: 800;
-  animation: banner-pulse 1s ease-in-out infinite alternate;
 }
 
 .pspin {

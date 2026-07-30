@@ -214,7 +214,7 @@ export function HostView() {
 
       <main className="tv-main">
         <section className="panel tv-wheel-panel">
-          <Wheel ref={wheelRef} segments={SEGMENTS} disabled={false} onLand={handleLand} spinLabel="SPIN" />
+          <Wheel ref={wheelRef} segments={SEGMENTS} onLand={handleLand} />
         </section>
 
         <section className="tv-side">

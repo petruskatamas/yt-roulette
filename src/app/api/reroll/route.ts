@@ -7,7 +7,6 @@ export async function POST(req: Request) {
   if (!spin?.query) return bad(400, 'bad spin')
   const state = getState()
   state.lastSpin = spin
-  state.history = [spin, ...state.history.slice(1)]
   bump()
   return ok()
 }

@@ -32,17 +32,18 @@ restart doesn't lose the game.
    card** — 24 predictions of what they'll see in the depths of YouTube
    ("a birthday party", "exactly 0 views", "someone's cat"…). `✨ Fill blanks`
    tops up with random suggestions. Center square is free.
-3. **Spin (TV)**: hit start, take turns spinning. The wheel lands on a category
-   (digicams, camcorders, ancient web, gamer ghosts, wildcard…) and generates a
-   concrete search — e.g. `"IMG 3201"` or `Webcam video from March 4, 2012` —
-   usually with the date baked into the keyphrase itself; fresh-upload categories
-   are pre-sorted newest-first.
-4. **Dig**: open the search on the TV, scroll past anything popular, pick a
-   buried video, watch it together.
-5. **Mark (phones)**: players tap squares they can justify. The host can tap any
-   player on the TV to peek at their card and referee.
-6. **BINGO**: the moment someone completes a row/column/diagonal, the TV erupts
-   in a full-screen celebration (phones get a banner too).
+3. **Spin (phones → TV)**: hit start; on your turn a big SPIN button appears on
+   your phone and the wheel spins on the TV. It lands on a category (digicams,
+   camcorders, ancient web, gamer ghosts, wildcard…) and generates a concrete
+   search — e.g. `"IMG 3201"` or `Webcam video from March 4, 2012` — usually
+   with the date baked into the keyphrase; fresh-upload categories are
+   pre-sorted newest-first. Searches open in an incognito window on the TV.
+4. **Dig**: scroll past anything popular, pick a buried video, watch it together.
+5. **Mark (phones)**: players tap squares they can justify — every mark shows up
+   as a toast on the TV, and the host can open any player's card to referee.
+6. **BINGO**: the first completed row/column/diagonal wins the round — the TV
+   erupts, shows the winning card, and offers the next round (keep cards or
+   write new ones). Wins are tallied per player across the evening.
 
 ## House rules (pick your poison)
 

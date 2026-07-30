@@ -7,14 +7,11 @@ export type WheelHandle = { spin: () => void }
 
 type Props = {
   segments: Segment[]
-  disabled: boolean
   onLand: (segment: Segment) => void
-  spinLabel: string
   ref?: Ref<WheelHandle>
 }
 
 const SPIN_S = 4.4
-
 const CX = 210
 const CY = 210
 const R = 200
@@ -33,7 +30,7 @@ function segmentPath(i: number, total: number): string {
   return `M ${CX} ${CY} L ${p0.x} ${p0.y} A ${R} ${R} 0 0 1 ${p1.x} ${p1.y} Z`
 }
 
-export function Wheel({ segments, disabled, onLand, spinLabel, ref }: Props) {
+export function Wheel({ segments, onLand, ref }: Props) {
   const [rot, setRot] = useState(0)
   const [spinning, setSpinning] = useState(false)
   const [landedId, setLandedId] = useState<string | null>(null)
@@ -41,7 +38,7 @@ export function Wheel({ segments, disabled, onLand, spinLabel, ref }: Props) {
   const seg = 360 / segments.length
 
   const spin = () => {
-    if (spinning || disabled) return
+    if (spinning) return
     const idx = Math.floor(Math.random() * segments.length)
     targetRef.current = segments[idx]
     const jitter = (Math.random() - 0.5) * seg * 0.7
@@ -67,7 +64,7 @@ export function Wheel({ segments, disabled, onLand, spinLabel, ref }: Props) {
   }
 
   return (
-    <div className={`wheel-wrap ${spinning ? 'is-spinning' : ''}`}>
+    <div className="wheel-wrap">
       <div className="wheel-pointer">▼</div>
       <div
         className="wheel-rotor"
@@ -99,12 +96,8 @@ export function Wheel({ segments, disabled, onLand, spinLabel, ref }: Props) {
           <circle cx={CX} cy={CY} r={62} fill="#0c0e15" stroke="#d4af37" strokeWidth="3" />
         </svg>
       </div>
-      <button
-        className="wheel-spin-btn"
-        onClick={spin}
-        disabled={spinning || disabled}
-      >
-        {spinning ? '...' : spinLabel}
+      <button className="wheel-spin-btn" onClick={spin} disabled={spinning}>
+        {spinning ? '...' : 'SPIN'}
       </button>
     </div>
   )
