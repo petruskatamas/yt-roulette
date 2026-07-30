@@ -1,8 +1,4 @@
-export type Cell = {
-  text: string
-  marked: boolean
-  free?: boolean
-}
+import type { Cell } from '../types'
 
 export const CHALLENGES: string[] = [
   'Pontosan 0 megtekintés',
@@ -111,22 +107,6 @@ export const CHALLENGES: string[] = [
   'Padból, titokban filmezett tanóra',
   'Galamb',
 ]
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
-
-export function newCard(): Cell[] {
-  const picks = shuffle(CHALLENGES).slice(0, 24)
-  const cells: Cell[] = picks.map((text) => ({ text, marked: false }))
-  cells.splice(12, 0, { text: 'FREE', marked: true, free: true })
-  return cells
-}
 
 const LINES: number[][] = [
   // rows

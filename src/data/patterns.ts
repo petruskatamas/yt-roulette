@@ -2,26 +2,7 @@ import {
   ri, pad, pick, hexChar, randDate, today, compact, spaced,
   monthDayY, monthDDY, MONTHS,
 } from '../lib/rand'
-
-export type SortMode = 'date' | 'none'
-
-export type SpinQuery = {
-  query: string
-  sort: SortMode
-  map: string
-  tip: string
-}
-
-export type Segment = {
-  id: string
-  label: string
-  emoji: string
-  color: string
-  desc: string
-  gen: () => SpinQuery
-}
-
-type Gen = () => { query: string; sort?: SortMode; map?: string }
+import type { Gen, SegDef, Segment, SortMode } from '../types'
 
 const MAP1 = '1. térkép · vadonatúj (~0 megtekintés)'
 const MAP2 = '2. térkép · régi és elfeledett (~0 megtekintés)'
@@ -32,8 +13,7 @@ export const ytUrl = (query: string, sort: SortMode) =>
     sort === 'date' ? '&sp=CAI%253D' : ''
   }`
 
-// ————— generátorok, a YouTube's Recycle Bin dokumentum térképeiből —————
-// (a keresőkifejezések angolok maradnak — a YouTube-on lévő fájlnevekre kell illeszkedniük)
+// Queries stay English: they must match real filenames uploaded to YouTube.
 
 const digicam: Gen[] = [
   () => ({ query: `"IMG ${pad(ri(0, 9999), 4)}"` }),
@@ -350,117 +330,89 @@ const oddballs: Gen[] = [
   () => ({ query: `"Kava Injected"` }),
 ]
 
-// ————— a kerék —————
-
 const RED = '#c1121f'
 const BLACK = '#191c26'
 const GREEN = '#1f7a4d'
 
-type SegDef = {
-  id: string
-  label: string
-  emoji: string
-  desc: string
-  pool: Gen[]
-  map: string
-  tip: string
-}
-
 const DEFS: SegDef[] = [
   {
     id: 'fresh', label: 'Friss', emoji: '🍼',
-    desc: 'Percekkel ezelőtt feltöltött videók, nulla megtekintésre ítélve',
     pool: fresh, map: MAP1,
     tip: 'A találatok feltöltési idő szerint vannak rendezve — lehet, hogy te vagy az első ember, aki valaha látja őket.',
   },
   {
     id: 'digicam', label: 'Digikamera', emoji: '📷',
-    desc: '2000-es évekbeli digitális fényképezőgépek alapértelmezett fájlnevei',
     pool: digicam, map: MAP2,
     tip: 'Görgess túl mindenen, ami népszerű — a temető pár találattal lejjebb kezdődik.',
   },
   {
     id: 'ancient', label: 'Őskor', emoji: '🦖',
-    desc: '2009 előtti kamerás mobilok, MMS-ek és Flip kamerák',
     pool: ancient, map: MAP3,
     tip: 'Ezek 2006–2008-as kövületek. Külön respekt mindenért, ami ennyi év után is 0 megtekintésen áll.',
   },
   {
     id: 'gamer', label: 'Gamer', emoji: '🕹️',
-    desc: 'Elfeledett Roblox-, Bandicam- és CoD-felvételek',
     pool: gamer, map: MAP2,
     tip: 'Automatikusan elnevezett játékfelvételek, amiknek soha senki nem adott címet. Tiszta 2012.',
   },
   {
     id: 'chat', label: 'Chat', emoji: '💬',
-    desc: 'WhatsApp-, KakaoTalk- és Messenger-exportok',
     pool: chatApps, map: MAP2,
     tip: 'Videók, amik valakinek a csoportcsetjéből egyenesen a YouTube-ra szöktek.',
   },
   {
     id: 'camcorder', label: 'Kamkorder', emoji: '📼',
-    desc: 'Kazettás kamerák, DVD-rippek és VTS-fájlok',
     pool: camcorder, map: MAP2,
     tip: 'Egyenesen egy MiniDV-kazettáról vagy egy otthon írt DVD-ről.',
   },
   {
     id: 'webcam', label: 'Webkamera', emoji: '🎥',
-    desc: 'Szemcsés webkamerás feltöltések 2008–2016-ból',
     pool: webcams, map: MAP2,
     tip: 'A hálószobai webkamerás monológok aranykora.',
   },
   {
     id: 'world', label: 'Nagyvilág', emoji: '🌍',
-    desc: 'Alapértelmezett fájlnevek más nyelveken',
     pool: worldTour, map: MAP2,
     tip: 'A lomtár globális. Bónuszpont, ha a címet sem tudod elolvasni.',
   },
   {
     id: 'screen', label: 'Képernyő', emoji: '🖥️',
-    desc: 'OBS-, Loom-, mobizen- és képernyőfelvételek',
     pool: screenRecs, map: MAP2,
     tip: 'Valaki felvette a képernyőjét, aztán elfelejtette, minek.',
   },
   {
     id: 'phones', label: 'Régi mobil', emoji: '📱',
-    desc: 'BlackBerry-, Motorola- és korai Android-feltöltések',
     pool: oldPhones, map: MAP2,
     tip: 'Olyan telefonról feltöltve, aminek még gombjai voltak.',
   },
   {
     id: 'editors', label: 'Szerkesztő', emoji: '🎬',
-    desc: 'Clipchamp, Magisto, Filmora alapértelmezett címek',
     pool: editors, map: MAP2,
     tip: 'Megnyitottak egy vágóprogramot, alapnéven exportáltak, és eltűntek.',
   },
   {
     id: 'drones', label: 'Drónok', emoji: '🚁',
-    desc: 'DJI-, GoPro- és akciókamera-fájlok',
     pool: drones, map: MAP2,
     tip: 'Sosem látott légifelvétel a Föld egy pontjáról.',
   },
   {
     id: 'dates', label: 'Dátumok', emoji: '📅',
-    desc: 'Csupasz ÉÉÉÉHHNN dátumcímek',
     pool: dateStamps, map: MAP2,
     tip: 'Egy cím, ami csak egy dátum. Mi történt aznap? Egy módon derül ki.',
   },
   {
     id: 'ext', label: 'Fájltípus', emoji: '🧩',
-    desc: 'Nyers fájlkiterjesztés-címek (.MP4, .3gp, .VOB)',
     pool: fileExt, map: MAP2,
     tip: 'Ha a teljes cím egy fájlkiterjesztés, ott senki nem hajtott a nézettségre.',
   },
   {
     id: 'slides', label: 'Diavetítés', emoji: '💾',
-    desc: 'Stupeflix, Animoto és a diavetítő-gépek',
     pool: slideshows, map: MAP2,
     tip: 'Automata fotó-diavetítések jogdíjmentes zenével. Színtiszta nosztalgia.',
   },
   {
     id: 'wild', label: 'Joker', emoji: '🔮',
-    desc: 'Bármi a teljes lomtárból — vagy valami még furább',
-    pool: [], // lentebb töltjük fel
+    pool: [], // filled below
     map: MAP2,
     tip: 'A zöld nulla. Bármi lehet az egész temetőből.',
   },
@@ -469,7 +421,7 @@ const DEFS: SegDef[] = [
 const allPools = DEFS.filter((d) => d.id !== 'wild').map((d) => d.pool)
 DEFS[DEFS.length - 1].pool = [
   ...oddballs,
-  ...oddballs, // a fura kifejezések 2x súllyal a teljes merítéshez képest
+  ...oddballs, // 2x weight vs the dip into all pools
   () => pick(pick(allPools))(),
 ]
 
@@ -477,7 +429,6 @@ export const SEGMENTS: Segment[] = DEFS.map((d, i) => ({
   id: d.id,
   label: d.label,
   emoji: d.emoji,
-  desc: d.desc,
   color: d.id === 'wild' ? GREEN : i % 2 === 0 ? RED : BLACK,
   gen: () => {
     const g = pick(d.pool)()

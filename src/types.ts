@@ -1,5 +1,38 @@
-import type { Cell } from './data/challenges'
-import type { SpinQuery } from './data/patterns'
+export type Cell = {
+  text: string
+  marked: boolean
+  free?: boolean
+}
+
+export type SortMode = 'date' | 'none'
+
+export type SpinQuery = {
+  query: string
+  sort: SortMode
+  map: string
+  tip: string
+}
+
+export type Segment = {
+  id: string
+  label: string
+  emoji: string
+  color: string
+  gen: () => SpinQuery
+}
+
+export type Gen = () => { query: string; sort?: SortMode; map?: string }
+
+export type SegDef = {
+  id: string
+  label: string
+  emoji: string
+  pool: Gen[]
+  map: string
+  tip: string
+}
+
+export type SimpleDate = { y: number; m: number; d: number }
 
 export type Spin = SpinQuery & {
   player: string
@@ -11,8 +44,7 @@ export type Spin = SpinQuery & {
 export type GamePlayer = {
   id: string
   name: string
-  /** null until the player writes & submits their own card */
-  cells: Cell[] | null
+  cells: Cell[] | null // null until the player submits their card
 }
 
 export type GameState = {

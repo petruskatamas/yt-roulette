@@ -1,4 +1,4 @@
-import type { Cell } from '../data/challenges'
+import type { Cell } from '../types'
 import { winningCells } from '../data/challenges'
 
 type Props = {

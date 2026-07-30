@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import type { Segment } from '../data/patterns'
+import type { Segment } from '../types'
 
 type Props = {
   segments: Segment[]

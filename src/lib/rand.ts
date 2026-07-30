@@ -10,7 +10,7 @@ export const MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ] as const
 
-export type SimpleDate = { y: number; m: number; d: number }
+import type { SimpleDate } from '../types'
 
 export const randDate = (yFrom: number, yTo: number): SimpleDate => ({
   y: ri(yFrom, yTo),

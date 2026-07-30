@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import { openOnTv, useGame, useJoinBase } from '@/lib/gameClient'
 import { SEGMENTS, ytUrl } from '../data/patterns'
-import type { Segment } from '../data/patterns'
 import { hasBingo } from '../data/challenges'
-import type { GamePlayer, Spin } from '../types'
+import type { GamePlayer, Segment, Spin } from '../types'
 import { Wheel } from '../components/Wheel'
 import { BingoCard } from '../components/BingoCard'
 import { QR } from '../components/QR'
@@ -60,8 +59,6 @@ export function HostView() {
       </div>
     )
   }
-
-  // ————— beállítás —————
 
   const addPlayer = () => {
     const name = nameInput.trim()
@@ -126,8 +123,6 @@ export function HostView() {
     )
   }
 
-  // ————— játék —————
-
   const spinner = state.players[state.current]
   const lastSpin = state.lastSpin
   const inspected = state.players.find((p) => p.id === inspectId)
@@ -161,7 +156,7 @@ export function HostView() {
       setCopied(true)
       setTimeout(() => setCopied(false), 1500)
     } catch {
-      /* nincs vágólap — nem gond */
+      /* clipboard unavailable */
     }
   }
 

@@ -50,7 +50,7 @@ function save() {
   }
 }
 
-/** Call after every mutation: version bump makes pollers refetch, save persists. */
+// call after every mutation: pollers refetch on version change
 export function bump() {
   getState().version++
   save()
@@ -70,7 +70,6 @@ export function lanIp(): string {
   return 'localhost'
 }
 
-/** Open a URL in an incognito browser window on the host machine (no personalized results). */
 export function openIncognito(url: string) {
   const run = (cmd: string, args: string[], fallback?: () => void) => {
     const started = Date.now()
@@ -96,7 +95,6 @@ export function openIncognito(url: string) {
   }
 }
 
-/** Safely parse a JSON POST body; malformed input becomes an empty object. */
 export async function readBody(req: Request): Promise<Record<string, unknown>> {
   try {
     const body = await req.json()

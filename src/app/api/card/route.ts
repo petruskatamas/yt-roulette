@@ -1,5 +1,5 @@
 import { bad, bump, getState, ok, readBody } from '@/server/game'
-import type { Cell } from '@/data/challenges'
+import type { Cell } from '@/types'
 
 export async function POST(req: Request) {
   const body = await readBody(req)
