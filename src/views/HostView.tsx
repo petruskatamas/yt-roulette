@@ -3,22 +3,20 @@ import { openOnTv, useGame, useJoinBase, useWakeLock } from '@/lib/gameClient'
 import { SEGMENTS, ytUrl } from '../data/patterns'
 import { bestLineProgress, hasBingo } from '../data/challenges'
 import { fanfare, initSoundUnlock, markTick } from '../lib/sound'
+import { fmtDate, fmtRelative, fmtViews, localeOptions, messages } from '../lib/i18n'
+import type { Messages } from '../lib/i18n'
 import type { GamePlayer, Segment, Spin, YtChannel, YtResult, YtVideoDetails } from '../types'
 import { Wheel } from '../components/Wheel'
 import type { WheelHandle } from '../components/Wheel'
 import { BingoCard } from '../components/BingoCard'
 import { QR } from '../components/QR'
 
-function JoinGrid({ players }: { players: GamePlayer[] }) {
+function JoinGrid({ players, t }: { players: GamePlayer[]; t: Messages }) {
   const joinBase = useJoinBase()
   if (players.length === 0) return null
   return (
     <div className="join-section">
-      {joinBase?.includes('localhost') && (
-        <p className="hint">
-          ⚠️ Nem található hálózati cím — a gép ugyanazon a Wi-Fi-n legyen, mint a telefonok.
-        </p>
-      )}
+      {joinBase?.includes('localhost') && <p className="hint">{t.join.noLan}</p>}
       <div className="join-grid">
         {players.map((p) => {
           const url = `${joinBase ?? ''}/#/p/${p.id}`
@@ -33,9 +31,7 @@ function JoinGrid({ players }: { players: GamePlayer[] }) {
           )
         })}
       </div>
-      <p className="hint">
-        Olvasd be a telefonoddal → írd meg a saját bingókártyád. ✅ = kártya leadva.
-      </p>
+      <p className="hint">{t.join.scanHint}</p>
     </div>
   )
 }
@@ -145,12 +141,14 @@ export function HostView() {
     }
   }, [roundOver])
 
+  const t = messages(state?.locale)
+
+  useEffect(() => {
+    document.documentElement.lang = t.bcp47.slice(0, 2)
+  }, [t])
+
   if (!state) {
-    return (
-      <div className="center-note">
-        {offline ? 'A szerver nem elérhető — fut az `npm run dev`?' : 'Kapcsolódás…'}
-      </div>
-    )
+    return <div className="center-note">{offline ? t.host.serverDown : t.common.connecting}</div>
   }
 
   const addPlayer = () => {
@@ -166,20 +164,35 @@ export function HostView() {
         <h1 className="logo">
           <span className="logo-yt">YT</span> ROULETTE
         </h1>
-        <p className="tagline">nulla nézettségű bingó · túra a YouTube lomtárában</p>
+        <p className="tagline">{t.setup.tagline}</p>
 
         <div className="setup-card">
-          <h2>Ki játszik?</h2>
+          <div className="lang-row">
+            <span className="hint">{t.setup.language}</span>
+            <select
+              className="lang-select"
+              value={state.locale}
+              onChange={(e) => post('/locale', { locale: e.target.value })}
+            >
+              {localeOptions.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <h2>{t.setup.who}</h2>
           <div className="name-row">
             <input
               value={nameInput}
               onChange={(e) => setNameInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addPlayer()}
-              placeholder="Játékos neve…"
+              placeholder={t.setup.namePlaceholder}
               maxLength={20}
               autoFocus
             />
-            <button className="btn" onClick={addPlayer}>Hozzáad</button>
+            <button className="btn" onClick={addPlayer}>{t.setup.add}</button>
           </div>
           <div className="player-chips">
             {state.players.map((p) => (
@@ -188,28 +201,26 @@ export function HostView() {
                 <button className="chip-x" onClick={() => post('/players/remove', { id: p.id })}>×</button>
               </span>
             ))}
-            {state.players.length === 0 && <span className="hint">Adj hozzá legalább egy játékost</span>}
+            {state.players.length === 0 && <span className="hint">{t.setup.needPlayer}</span>}
           </div>
 
-          <JoinGrid players={state.players} />
+          <JoinGrid players={state.players} t={t} />
 
           <button
             className="btn btn-primary btn-big"
             onClick={() => post('/start')}
             disabled={state.players.length === 0}
           >
-            Játék indítása ▸
+            {t.setup.start}
           </button>
         </div>
 
         <details className="rules">
-          <summary>Hogyan játsszátok?</summary>
+          <summary>{t.setup.rulesTitle}</summary>
           <ol>
-            <li>Adjatok hozzá mindenkit itt a TV-n, majd mindenki beolvassa a saját QR-kódját a telefonjával.</li>
-            <li>A telefonján mindenki megírja a saját 5×5-ös bingókártyáját — csupa olyat, amiről azt hiszi, elő fog kerülni a YouTube mélyéről („szülinapi buli”, „pontosan 0 megtekintés”, „valakinek a macskája”…).</li>
-            <li>Felváltva pörgetitek a kerekét a TV-n. A kerék egy keresést generál ~0 megtekintésű videókra — cím nélküliekre, elfeledettekre.</li>
-            <li>Nyisd meg a keresést, válassz egy eltemetett videót, és nézzétek meg együtt. A játékosok a telefonjukon jelölik a találataikat.</li>
-            <li>Az első teljes sor, oszlop vagy átló — és a TV felrobban. 🎉</li>
+            {t.setup.rules.map((r, i) => (
+              <li key={i}>{r}</li>
+            ))}
           </ol>
         </details>
       </div>
@@ -218,17 +229,15 @@ export function HostView() {
 
   const spinner = state.players[state.current]
   const lastSpin = state.lastSpin
+  const lastSegment = SEGMENTS.find((s) => s.id === lastSpin?.segmentId)
+  const lastSegText = lastSpin
+    ? t.segments[lastSpin.segmentId as keyof typeof t.segments]
+    : undefined
   const inspected = state.players.find((p) => p.id === inspectId)
 
   const handleLand = (segment: Segment) => {
     const q = segment.gen()
-    const spin: Spin = {
-      ...q,
-      player: spinner?.name ?? '?',
-      segmentId: segment.id,
-      segmentLabel: segment.label,
-      emoji: segment.emoji,
-    }
+    const spin: Spin = { ...q, player: spinner?.name ?? '?', segmentId: segment.id }
     post('/spin', { spin })
     setCopied(false)
   }
@@ -246,8 +255,8 @@ export function HostView() {
 
   const newGame = () =>
     setConfirmBox({
-      text: 'Mindenkinek véget ér a játék: játékosok, kártyák, győzelmek törlődnek. Biztos?',
-      label: 'Új játék',
+      text: t.confirm.newGameText,
+      label: t.confirm.newGameLabel,
       action: () => {
         post('/reset')
         setInspectId(null)
@@ -262,12 +271,12 @@ export function HostView() {
         <h1 className="logo logo-small">
           <span className="logo-yt">YT</span> ROULETTE
         </h1>
-        {offline && <span className="offline-note">⚠️ megszakadt a kapcsolat…</span>}
+        {offline && <span className="offline-note">{t.host.offline}</span>}
         <div className="topbar-actions">
           <button className="btn btn-ghost" onClick={() => setShowLinks(true)}>
-            Csatlakozás
+            {t.host.connect}
           </button>
-          <button className="btn btn-ghost" onClick={newGame}>Új játék</button>
+          <button className="btn btn-ghost" onClick={newGame}>{t.host.newGame}</button>
         </div>
       </header>
 
@@ -281,38 +290,38 @@ export function HostView() {
             {lastSpin ? (
               <div className="spin-result" key={`${lastSpin.player}-${lastSpin.query}`}>
                 <div className="spin-meta">
-                  <span className="spin-seg">{lastSpin.emoji} {lastSpin.segmentLabel}</span>
-                  <span className="spin-map">{lastSpin.map}</span>
-                  <span className="spin-player">pörgette: {lastSpin.player}</span>
+                  <span className="spin-seg">
+                    {lastSegment?.emoji} {lastSegText?.label}
+                  </span>
+                  <span className="spin-player">{t.host.spunBy(lastSpin.player)}</span>
                 </div>
-                <button className="spin-query" onClick={copyQuery} title="Kattints a másoláshoz">
+                <button className="spin-query" onClick={copyQuery} title={t.host.copyTitle}>
                   {lastSpin.query}
-                  <span className="copy-hint">{copied ? '✓ másolva' : '⧉'}</span>
+                  <span className="copy-hint">{copied ? t.host.copied : '⧉'}</span>
                 </button>
                 <div className="spin-actions">
                   <button className="btn btn-primary" onClick={() => setSearchOpen(true)}>
-                    🔍 Keresés
-                  </button>                  <button
+                    {t.host.search}
+                  </button>
+                  <button
                     className="btn btn-ghost"
                     onClick={() => openOnTv(ytUrl(lastSpin.query, lastSpin.sort))}
                   >
-                    Böngészőben ↗
+                    {t.common.inBrowser}
                   </button>
                 </div>
                 {lastSpin.sort === 'date' && (
-                  <div className="spin-note">feltöltési idő szerint rendezve — a legújabb elöl</div>
+                  <div className="spin-note">{t.host.sortedByDate}</div>
                 )}
-                <p className="spin-tip">{lastSpin.tip}</p>
+                <p className="spin-tip">{lastSegText?.tip}</p>
               </div>
             ) : (
-              <p className="spin-placeholder">
-                Pörgesd meg a kereket!
-              </p>
+              <p className="spin-placeholder">{t.host.spinPrompt}</p>
             )}
           </div>
 
           <div className="panel tv-players">
-            <h2 className="panel-title">Játékosok</h2>
+            <h2 className="panel-title">{t.host.players}</h2>
             <div className="status-list">
               {state.players.map((p, i) => {
                 const marks = p.cells?.filter((c) => c.marked && !c.free).length ?? 0
@@ -332,7 +341,7 @@ export function HostView() {
                     </span>
                     {best >= 4 && <span className="status-danger">🔥 4/5</span>}
                     <span className="status-info">
-                      {bingo ? '🏆 BINGÓ' : p.cells ? `${marks}/24 jelölve` : '✍️ kártyát ír…'}
+                      {bingo ? t.host.bingo : p.cells ? t.host.marked(marks) : t.host.writingCard}
                     </span>
                   </button>
                 )
@@ -354,15 +363,15 @@ export function HostView() {
         <div className="editor-overlay" onClick={() => setInspectId(null)}>
           <div className="editor-card inspect-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="inspect-title">
-              <span style={{ color: inspected.color }}>{inspected.name}</span> kártyája
+              <span style={{ color: inspected.color }}>{t.host.cardOf(inspected.name)}</span>
               {inspected.wins > 0 && <span className="status-wins"> 🏆{inspected.wins}</span>}
             </div>
             {inspected.cells ? (
-              <BingoCard cells={inspected.cells} readOnly />
+              <BingoCard cells={inspected.cells} readOnly t={t} />
             ) : (
-              <p className="hint">✍️ Még írja a kártyáját…</p>
+              <p className="hint">{t.host.stillWriting}</p>
             )}
-            <button className="btn" onClick={() => setInspectId(null)}>Bezárás</button>
+            <button className="btn" onClick={() => setInspectId(null)}>{t.common.close}</button>
           </div>
         </div>
       )}
@@ -370,8 +379,8 @@ export function HostView() {
       {showLinks && (
         <div className="editor-overlay" onClick={() => setShowLinks(false)}>
           <div className="editor-card dialog-wide" onClick={(e) => e.stopPropagation()}>
-            <JoinGrid players={state.players} />
-            <button className="btn" onClick={() => setShowLinks(false)}>Bezárás</button>
+            <JoinGrid players={state.players} t={t} />
+            <button className="btn" onClick={() => setShowLinks(false)}>{t.common.close}</button>
           </div>
         </div>
       )}
@@ -380,7 +389,7 @@ export function HostView() {
         <div className="search-screen">
           <div className="search-head">
             {playing && (
-              <button className="btn" onClick={() => setPlaying(null)}>◂ Találatok</button>
+              <button className="btn" onClick={() => setPlaying(null)}>{t.search.results}</button>
             )}
             <span className="search-query">{lastSpin.query}</span>
             <button
@@ -393,9 +402,9 @@ export function HostView() {
                 )
               }
             >
-              Böngészőben ↗
+              {t.common.inBrowser}
             </button>
-            <button className="btn" onClick={() => setSearchOpen(false)}>✕ Bezárás</button>
+            <button className="btn" onClick={() => setSearchOpen(false)}>✕ {t.common.close}</button>
           </div>
 
           {playing ? (
@@ -405,28 +414,34 @@ export function HostView() {
                   src={`https://www.youtube.com/embed/${playing.id}?autoplay=1&rel=0`}
                   allow="autoplay; encrypted-media; picture-in-picture"
                   allowFullScreen
-                  title="YouTube lejátszó"
+                  title={t.search.playerTitle}
                 />
                 <h2 className="watch-title">{playing.title}</h2>
                 <div className="watch-meta">
                   <span className={playing.views === 0 ? 'zero-views' : ''}>
-                    {playing.views < 0
-                      ? '? megtekintés'
-                      : playing.views === 0
-                        ? '☠️ 0 megtekintés'
-                        : `${playing.views.toLocaleString('hu-HU')} megtekintés`}
+                    {fmtViews(playing.views, t)}
                   </span>
-                  <span className={details?.likes === '0' ? 'zero-views' : ''}>
-                    · {details ? (details.likes === '' ? 'rejtett' : details.likes) : '…'} lájk
+                  <span className={details?.likes === 0 ? 'zero-views' : ''}>
+                    ·{' '}
+                    {!details
+                      ? '…'
+                      : details.likes == null
+                        ? t.watch.likesHidden
+                        : details.likesApprox
+                          ? t.watch.likesApprox(details.likesText)
+                          : t.watch.likes(details.likes)}
                   </span>
                   {details?.commentsDisabled && (
-                    <span className="zero-views">· 🚫 kikapcsolt kommentek</span>
+                    <span className="zero-views">· {t.watch.commentsOff}</span>
                   )}
-                  <span>· {details?.uploaded || playing.published}</span>
+                  <span>
+                    ·{' '}
+                    {details?.uploaded
+                      ? fmtDate(details.uploaded, t)
+                      : fmtRelative(playing.published, t)}
+                  </span>
                 </div>
-                {details?.description && (
-                  <p className="watch-desc">{details.description}</p>
-                )}
+                {details?.description && <p className="watch-desc">{details.description}</p>}
               </div>
 
               <aside className="watch-side">
@@ -436,19 +451,27 @@ export function HostView() {
                   )}
                   <div className="channel-name">{channel?.name ?? playing.channel}</div>
                   <div className="channel-stats">
-                    <span>{channel?.subscribers || 'rejtett feliratkozók'}</span>
-                    {channel?.videoCount && <span>· {channel.videoCount}</span>}
+                    <span>
+                      {!channel
+                        ? '…'
+                        : channel.subscribers == null
+                          ? t.watch.subscribersHidden
+                          : channel.subscribersApprox
+                            ? t.watch.subscribersApprox(channel.subscribersText)
+                            : t.watch.subscribers(channel.subscribers)}
+                    </span>
+                    {channel?.videoCount != null && (
+                      <span>· {t.watch.videos(channel.videoCount)}</span>
+                    )}
                   </div>
-                  {channel?.description && (
-                    <p className="channel-desc">{channel.description}</p>
-                  )}
+                  {channel?.description && <p className="channel-desc">{channel.description}</p>}
                   <button
                     className="btn btn-ghost"
                     onClick={() =>
                       openOnTv(`https://www.youtube.com/channel/${playing.channelId}`)
                     }
                   >
-                    Csatorna megnyitása ↗
+                    {t.watch.openChannel}
                   </button>
                 </div>
 
@@ -463,8 +486,8 @@ export function HostView() {
                         <span className="yt-title">{r.title}</span>
                         <span className="yt-meta">{r.channel}</span>
                         <span className={`yt-meta ${r.views === 0 ? 'zero-views' : ''}`}>
-                          {r.views < 0 ? '?' : r.views.toLocaleString('hu-HU')} megtekintés
-                          {r.published && ` · ${r.published}`}
+                          {fmtViews(r.views, t)}
+                          {r.published && ` · ${fmtRelative(r.published, t)}`}
                         </span>
                       </span>
                     </button>
@@ -474,18 +497,18 @@ export function HostView() {
             </div>
           ) : searchFailed ? (
             <div className="search-empty">
-              <p className="hint">Nem sikerült lekérni a találatokat — nyisd meg böngészőben.</p>
+              <p className="hint">{t.search.failed}</p>
               <button
                 className="btn btn-primary"
                 onClick={() => openOnTv(ytUrl(lastSpin.query, lastSpin.sort))}
               >
-                Megnyitás Böngészőben ↗
+                {t.search.openInBrowser}
               </button>
             </div>
           ) : results == null ? (
-            <p className="hint search-empty">Keresés…</p>
+            <p className="hint search-empty">{t.search.searching}</p>
           ) : results.length === 0 ? (
-            <p className="hint search-empty">Semmi találat — pörgessetek újra</p>
+            <p className="hint search-empty">{t.search.noResults}</p>
           ) : (
             <div className="search-list">
               {results.map((r) => (
@@ -497,12 +520,10 @@ export function HostView() {
                   <span className="yt-info">
                     <span className="yt-title">{r.title}</span>
                     <span className={`yt-stats ${r.views === 0 ? 'zero-views' : ''}`}>
-                      {r.views < 0
-                        ? '? megtekintés'
-                        : r.views === 0
-                          ? '☠️ 0 megtekintés'
-                          : `${r.views.toLocaleString('hu-HU')} megtekintés`}
-                      {r.published && <span className="yt-meta"> · {r.published}</span>}
+                      {fmtViews(r.views, t)}
+                      {r.published && (
+                        <span className="yt-meta"> · {fmtRelative(r.published, t)}</span>
+                      )}
                     </span>
                     <span className="yt-meta">{r.channel}</span>
                   </span>
@@ -518,7 +539,7 @@ export function HostView() {
           <div className="editor-card" onClick={(e) => e.stopPropagation()}>
             <p className="confirm-text">{confirmBox.text}</p>
             <div className="editor-actions">
-              <button className="btn" onClick={() => setConfirmBox(null)}>Mégse</button>
+              <button className="btn" onClick={() => setConfirmBox(null)}>{t.common.cancel}</button>
               <button
                 className="btn btn-primary"
                 onClick={() => {
@@ -537,13 +558,13 @@ export function HostView() {
         <div className="celebration">
           <div className="celebration-inner">
             <div className="celebration-confetti">🎉 🎰 🎉</div>
-            <div className="celebration-title">B I N G Ó !</div>
+            <div className="celebration-title">{t.celebration.title}</div>
             <div className="celebration-name" style={{ color: winner.color }}>
               {winner.name}
             </div>
             {winner.cells && (
               <div className="celebration-card">
-                <BingoCard cells={winner.cells} readOnly />
+                <BingoCard cells={winner.cells} readOnly t={t} />
               </div>
             )}
             <div className="celebration-actions">
@@ -551,21 +572,21 @@ export function HostView() {
                 className="btn btn-primary"
                 onClick={() => post('/round', { redeal: false })}
               >
-                Új kör (kártyák maradnak)
+                {t.celebration.keepCards}
               </button>
               <button
                 className="btn"
                 onClick={() =>
                   setConfirmBox({
-                    text: 'Új kör új kártyákkal — mindenki újraírja a sajátját a telefonján. Mehet?',
-                    label: 'Új kártyák',
+                    text: t.confirm.redealText,
+                    label: t.confirm.redealLabel,
                     action: () => post('/round', { redeal: true }),
                   })
                 }
               >
-                Új kör új kártyákkal
+                {t.celebration.newCards}
               </button>
-              <button className="btn btn-ghost" onClick={newGame}>Új játék</button>
+              <button className="btn btn-ghost" onClick={newGame}>{t.host.newGame}</button>
             </div>
           </div>
         </div>

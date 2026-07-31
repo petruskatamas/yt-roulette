@@ -15,6 +15,7 @@ export const PLAYER_COLORS = [
 export function blankState(): GameState {
   return {
     phase: 'setup',
+    locale: 'en',
     players: [],
     current: 0,
     lastSpin: null,
@@ -30,6 +31,7 @@ function loadState(): GameState {
   try {
     const s = JSON.parse(readFileSync(DATA_FILE, 'utf8')) as GameState
     if (!Array.isArray(s.players) || typeof s.version !== 'number') return blankState()
+    s.locale ??= 'en'
     s.spinRequested ??= false
     s.roundWonBy ??= null
     if (!Array.isArray(s.marks)) s.marks = []

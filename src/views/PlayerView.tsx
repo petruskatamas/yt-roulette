@@ -13,9 +13,11 @@ import {
 } from '@dnd-kit/core'
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
 import { useGame, useWakeLock } from '@/lib/gameClient'
-import { CHALLENGES, hasBingo } from '../data/challenges'
+import { challengesFor, hasBingo } from '../data/challenges'
+import { messages } from '../lib/i18n'
+import type { Messages } from '../lib/i18n'
 import { buzz, initSoundUnlock, pop } from '../lib/sound'
-import type { GamePlayer } from '../types'
+import type { GamePlayer, Locale } from '../types'
 import { BingoCard } from '../components/BingoCard'
 
 const draftKey = (playerId: string) => `ytr-draft-${playerId}`
@@ -70,9 +72,13 @@ function BuilderCell({
 
 function CardBuilder({
   player,
+  locale,
+  t,
   onSubmit,
 }: {
   player: GamePlayer
+  locale: Locale | undefined
+  t: Messages
   onSubmit: (texts: string[]) => void
 }) {
   const [texts, setTexts] = useState<string[]>(() => loadDraft(player.id))
@@ -80,9 +86,10 @@ function CardBuilder({
   const [draft, setDraft] = useState('')
   const [activeId, setActiveId] = useState<number | null>(null)
   const suppressClick = useRef(false)
+  const pool = challengesFor(locale)
   const placeholders = useMemo(
-    () => [...CHALLENGES].sort(() => Math.random() - 0.5).slice(0, 24),
-    [],
+    () => [...pool].sort(() => Math.random() - 0.5).slice(0, 24),
+    [pool],
   )
   const filled = texts.filter((t) => t.trim()).length
 
@@ -110,8 +117,8 @@ function CardBuilder({
     })
 
   const unusedPool = () => {
-    const used = new Set(texts.map((t) => t.trim().toLowerCase()).filter(Boolean))
-    return CHALLENGES.filter((c) => !used.has(c.toLowerCase()))
+    const used = new Set(texts.map((x) => x.trim().toLowerCase()).filter(Boolean))
+    return pool.filter((c) => !used.has(c.toLowerCase()))
   }
 
   const fillRandom = () => {
@@ -165,14 +172,10 @@ function CardBuilder({
     <div className="player-screen">
       <header className="pheader">
         <div className="pname" style={{ color: player.color }}>✍️ {player.name}</div>
-        <div className="hint">Írd meg a bingókártyád</div>
+        <div className="hint">{t.player.writeCard}</div>
       </header>
 
-      <p className="builder-intro">
-        24 dolog, amire fogadsz, hogy ma este felbukkan a videókban.
-        Koppints egy kockára a szerkesztéshez, húzd egy másikra a cseréhez.
-        A sarkok és az átlók több vonalban számítanak — oda tedd a tutikat.
-      </p>
+      <p className="builder-intro">{t.player.builderIntro}</p>
 
       <DndContext
         sensors={sensors}
@@ -213,14 +216,14 @@ function CardBuilder({
       <div className="builder-footer">
         <div className="builder-count">{filled}/24</div>
         <button className="btn" onClick={fillRandom} disabled={filled === 24}>
-          ✨ Üresek kitöltése
+          {t.player.fill}
         </button>
         <button
           className="btn btn-primary"
           onClick={() => onSubmit(texts.map((t) => t.trim()))}
           disabled={filled < 24}
         >
-          Mehet ▸
+          {t.player.submit}
         </button>
       </div>
 
@@ -232,15 +235,15 @@ function CardBuilder({
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
-              placeholder={`pl. ${placeholders[editing]}`}
+              placeholder={t.player.editPlaceholder(placeholders[editing])}
               maxLength={60}
             />
             <div className="editor-actions">
               <button className="btn" onClick={randomIntoEdit}>🎲</button>
               {texts[editing].trim() !== '' && (
-                <button className="btn" onClick={clearEdit}>Törlés</button>
+                <button className="btn" onClick={clearEdit}>{t.player.delete}</button>
               )}
-              <button className="btn btn-primary" onClick={saveEdit}>Mentés</button>
+              <button className="btn btn-primary" onClick={saveEdit}>{t.player.save}</button>
             </div>
           </div>
         </div>
@@ -255,6 +258,7 @@ export function PlayerView({ playerId }: { playerId: string }) {
   useWakeLock()
   useEffect(() => initSoundUnlock(), [])
 
+  const t = messages(state?.locale)
   const me = state?.players.find((p) => p.id === playerId)
   const hasCard = !!me?.cells
   useEffect(() => {
@@ -277,22 +281,26 @@ export function PlayerView({ playerId }: { playerId: string }) {
   if (!state) {
     return (
       <div className="center-note">
-        {offline ? 'Nem érem el a játékot — egy Wi-Fi-n vagy a TV-vel?' : 'Kapcsolódás…'}
+        {offline ? t.player.cantReach : t.common.connecting}
       </div>
     )
   }
 
   if (!me) {
     return (
-      <div className="center-note">
-        🫥 Nem vagy benne ebben a játékban (újraindult?).<br />
-        Kérd meg a házigazdát, hogy adjon hozzá, aztán olvasd be újra a QR-kódod.
-      </div>
+      <div className="center-note">{t.player.notInGame}</div>
     )
   }
 
   if (!me.cells) {
-    return <CardBuilder player={me} onSubmit={(texts) => post('/card', { playerId, texts })} />
+    return (
+      <CardBuilder
+        player={me}
+        locale={state.locale}
+        t={t}
+        onSubmit={(texts) => post('/card', { playerId, texts })}
+      />
+    )
   }
 
   const cells = me.cells
@@ -325,13 +333,13 @@ export function PlayerView({ playerId }: { playerId: string }) {
           disabled={state.spinRequested}
           onClick={() => post('/spin/request', { playerId })}
         >
-          {state.spinRequested ? 'SPINNING…' : 'SPIN!'}
+          {state.spinRequested ? t.player.spinning : t.player.spin}
         </button>
       )}
 
       {state.celebration && (
         <div className="mini-celebration">
-          🎉 BINGÓ — {state.celebration.name}! 🎉
+          {t.player.bingoBanner(state.celebration.name)}
         </div>
       )}
 
@@ -339,11 +347,11 @@ export function PlayerView({ playerId }: { playerId: string }) {
         <div className="mini-celebration">🏆 BINGÓ 🏆</div>
       )}
 
-      <BingoCard cells={cells} onToggle={toggle} />
+      <BingoCard cells={cells} onToggle={toggle} t={t} />
 
       <div className="pfooter">
-        <span className="hint">{marks}/24 jelölve · koppints a kockára, ha kiszúrtad</span>
-        {offline && <span className="offline-note">⚠️ újracsatlakozás…</span>}
+        <span className="hint">{t.player.markedHint(marks)}</span>
+        {offline && <span className="offline-note">{t.player.reconnecting}</span>}
       </div>
       </div>
     </div>

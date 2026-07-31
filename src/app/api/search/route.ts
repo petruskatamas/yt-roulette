@@ -1,5 +1,5 @@
 import { bad } from '@/server/game'
-import { collect, fetchInitialData } from '@/server/yt'
+import { collect, fetchInitialData, parseCount, parseRelative } from '@/server/yt'
 import type { YtResult } from '@/types'
 
 export const dynamic = 'force-dynamic'
@@ -16,17 +16,6 @@ type VideoRenderer = {
   viewCountText?: { simpleText?: string; runs?: Run[] }
   lengthText?: { simpleText?: string }
   thumbnail?: { thumbnails?: { url: string }[] }
-}
-
-function parseViews(vr: VideoRenderer): number {
-  const text =
-    vr.viewCountText?.simpleText ??
-    vr.viewCountText?.runs?.map((r) => r.text).join('') ??
-    ''
-  const digits = text.replace(/\D/g, '')
-  if (digits) return Number(digits)
-  if (/nincs|no views/i.test(text)) return 0
-  return -1
 }
 
 export async function GET(req: Request) {
@@ -50,15 +39,16 @@ export async function GET(req: Request) {
     if (!id || seen.has(id)) continue
     seen.add(id)
     const thumbs = vr.thumbnail?.thumbnails ?? []
+    const viewText =
+      vr.viewCountText?.simpleText ?? vr.viewCountText?.runs?.map((r) => r.text).join('') ?? ''
     results.push({
       id,
       title: vr.title?.runs?.map((r) => r.text).join('') ?? '',
       channel: vr.ownerText?.runs?.map((r) => r.text).join('') ?? '',
-      channelId:
-        vr.ownerText?.runs?.[0]?.navigationEndpoint?.browseEndpoint?.browseId ?? '',
-      published: vr.publishedTimeText?.simpleText ?? '',
+      channelId: vr.ownerText?.runs?.[0]?.navigationEndpoint?.browseEndpoint?.browseId ?? '',
+      published: parseRelative(vr.publishedTimeText?.simpleText ?? ''),
       thumb: thumbs[thumbs.length - 1]?.url ?? '',
-      views: parseViews(vr),
+      views: parseCount(viewText).value ?? -1,
       duration: vr.lengthText?.simpleText ?? '',
     })
     if (results.length >= 30) break

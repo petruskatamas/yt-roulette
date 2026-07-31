@@ -4,10 +4,6 @@ import {
 } from '../lib/rand'
 import type { Gen, SegDef, Segment, SortMode } from '../types'
 
-const MAP1 = '1. térkép · vadonatúj (~0 megtekintés)'
-const MAP2 = '2. térkép · régi és elfeledett (~0 megtekintés)'
-const MAP3 = '3. térkép · őskor (2006–2008)'
-
 export const ytUrl = (query: string, sort: SortMode) =>
   `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}${
     sort === 'date' ? '&sp=CAI%253D' : ''
@@ -54,19 +50,19 @@ const camcorder: Gen[] = [
 
 const oldPhones: Gen[] = [
   () => ({ query: `"VID0${pad(ri(0, 5000), 4)}"` }),
-  () => ({ query: `"Video0${pad(ri(0, 10), 2)}"`, map: MAP3 }),
+  () => ({ query: `"Video0${pad(ri(0, 10), 2)}"` }),
   () => ({ query: `"MOL0${hexChar()}${ri(0, 9)}"` }),
   () => ({ query: `"CAM0${pad(ri(0, 5000), 4)}"` }),
   () => ({ query: `"Moto_0${pad(ri(0, 999), 3)}"` }),
-  () => ({ query: `"Video from my phone"`, map: MAP3 }),
+  () => ({ query: `"Video from my phone"` }),
   () => ({ query: `"Sent from my blackberry smartphone"` }),
   () => ({ query: `"This video was uploaded from an Android phone"` }),
   () => ({ query: `"Sprint PictureMail"` }),
-  () => ({ query: `"You have new picture mail! (video)"`, map: MAP3 }),
-  () => ({ query: `"New Multimedia Message"`, map: MAP3 }),
+  () => ({ query: `"You have new picture mail! (video)"` }),
+  () => ({ query: `"New Multimedia Message"` }),
   () => ({ query: `"Sent using a Sony Ericsson mobile phone"` }),
   () => ({ query: `"sent from my iphone"` }),
-  () => ({ query: `"Vid0${pad(ri(0, 10), 2)}"`, map: MAP3 }),
+  () => ({ query: `"Vid0${pad(ri(0, 10), 2)}"` }),
 ]
 
 const gamer: Gen[] = [
@@ -81,8 +77,8 @@ const gamer: Gen[] = [
   () => ({ query: `"My great game My great capture"` }),
   () => ({ query: `"Shot with Geforce"` }),
   () => ({ query: `NHL14XBX` }),
-  () => ({ query: `Robloxapp`, sort: 'date', map: MAP1 }),
-  () => ({ query: `Lv 0`, sort: 'date', map: MAP1 }),
+  () => ({ query: `Robloxapp`, sort: 'date' }),
+  () => ({ query: `Lv 0`, sort: 'date' }),
 ]
 
 const drones: Gen[] = [
@@ -101,7 +97,7 @@ const drones: Gen[] = [
 
 const chatApps: Gen[] = [
   () => ({ query: `WhatsApp Video ${spaced(randDate(2016, 2025))}` }),
-  () => ({ query: `WhatsApp Video ${new Date().getFullYear()}`, sort: 'date', map: MAP1 }),
+  () => ({ query: `WhatsApp Video ${new Date().getFullYear()}`, sort: 'date' }),
   () => ({ query: `"WA0${pad(ri(0, 999), 3)}"` }),
   () => {
     const d = randDate(2013, 2024)
@@ -133,7 +129,7 @@ const fresh: Gen[] = [
   () => ({ query: `"Untitled Project"` }),
   () => ({ query: `"Meeting Recording"` }),
   () => ({ query: `/Storage/Emulated/` }),
-  () => ({ query: `FILE${pad(ri(0, 9999), 4)}`, sort: 'none', map: MAP2 }),
+  () => ({ query: `FILE${pad(ri(0, 9999), 4)}`, sort: 'none' }),
 ]
 
 const ancient: Gen[] = [
@@ -175,16 +171,16 @@ const screenRecs: Gen[] = [
   () => ({ query: `"New Loom Recording"` }),
   () => ({ query: `Screen Recording ${spaced(randDate(2013, 2024))}` }),
   () => ({ query: `Simplescreenrecorder ${spaced(randDate(2023, 2025))}` }),
-  () => ({ query: `RPReplay`, sort: 'date', map: MAP1 }),
+  () => ({ query: `RPReplay`, sort: 'date' }),
   () => ({ query: `VLC Record ${spaced(randDate(2011, 2024))}` }),
   () => ({ query: `"my screencast"` }),
   () => ({ query: `"Screencast from"` }),
-  () => ({ query: `ScreenRecording`, sort: 'date', map: MAP1 }),
+  () => ({ query: `ScreenRecording`, sort: 'date' }),
 ]
 
 const editors: Gen[] = [
   () => ({ query: `"Untitled Video Made with Clipchamp"` }),
-  () => ({ query: `"Made with Clipchamp"`, sort: 'date', map: MAP1 }),
+  () => ({ query: `"Made with Clipchamp"`, sort: 'date' }),
   () => ({ query: `"Made with Flexclip"` }),
   () => ({ query: `"Created with Wondershare Filmora"` }),
   () => ({ query: `"Created by Magisto - Magical Video Editor"` }),
@@ -194,7 +190,7 @@ const editors: Gen[] = [
   () => ({ query: `"I created this video with the YouTube Video Editor"` }),
   () => ({ query: `"My Ezvid Video"` }),
   () => ({ query: `"Copy of Copy of"` }),
-  () => ({ query: `"Untitled Design"`, sort: 'date', map: MAP1 }),
+  () => ({ query: `"Untitled Design"`, sort: 'date' }),
   () => ({ query: `"Your Paragraph Text"` }),
   () => ({ query: `"My stop motion movie"` }),
   () => ({ query: `"XiaoYing video"` }),
@@ -245,9 +241,9 @@ const worldTour: Gen[] = [
   () => ({ query: `"のコピー"` }),
   () => ({ query: `"копия видео"` }),
   () => ({ query: `"video senza titolo"` }),
-  () => ({ query: `"Sans titre"`, sort: 'date', map: MAP1 }),
+  () => ({ query: `"Sans titre"`, sort: 'date' }),
   () => ({ query: `"Mój edytowany film"` }),
-  () => ({ query: `"Vídeo desde mi teléfono"`, map: MAP3 }),
+  () => ({ query: `"Vídeo desde mi teléfono"` }),
   () => ({ query: `"Video dari ponsel saya"` }),
   () => ({ query: `"Mijn diavoorstelling"` }),
   () => {
@@ -265,7 +261,7 @@ const worldTour: Gen[] = [
 ]
 
 const fileExt: Gen[] = [
-  () => ({ query: `"${pick(['.MP4', '.3gp', '.MOV', '.AVI', '.WMV', '.3g2', '.mpeg', '.WAV', '.FLAC'])}"`, sort: 'date', map: MAP1 }),
+  () => ({ query: `"${pick(['.MP4', '.3gp', '.MOV', '.AVI', '.WMV', '.3g2', '.mpeg', '.WAV', '.FLAC'])}"`, sort: 'date' }),
   () => ({ query: `"${pick(['.VOB', '.flv', '.webm', '.divx', '.mpg', '.rmvb', '.qt', '.hevc'])}"` }),
   () => ({ query: `"${pad(ri(0, 9999), 4)}.mp4"` }),
   () => ({ query: `"${ri(1, 1000)}.mpg"` }),
@@ -300,12 +296,12 @@ const slideshows: Gen[] = [
 ]
 
 const oddballs: Gen[] = [
-  () => ({ query: `bmdjAAAF`, sort: 'date', map: MAP1 }),
-  () => ({ query: `"Com Oculus Vrshell"`, sort: 'date', map: MAP1 }),
-  () => ({ query: `"Com Oculus Metacam"`, sort: 'date', map: MAP1 }),
-  () => ({ query: `Recording gvo`, sort: 'date', map: MAP1 }),
-  () => ({ query: `"Portrait Video Nanny Canon"`, sort: 'date', map: MAP1 }),
-  () => ({ query: `"Video Assignment"`, sort: 'date', map: MAP1 }),
+  () => ({ query: `bmdjAAAF`, sort: 'date' }),
+  () => ({ query: `"Com Oculus Vrshell"`, sort: 'date' }),
+  () => ({ query: `"Com Oculus Metacam"`, sort: 'date' }),
+  () => ({ query: `Recording gvo`, sort: 'date' }),
+  () => ({ query: `"Portrait Video Nanny Canon"`, sort: 'date' }),
+  () => ({ query: `"Video Assignment"`, sort: 'date' }),
   () => ({ query: `"Test upload"` }),
   () => ({ query: `"Recovered Autosave"` }),
   () => ({ query: `"vlcsnap"` }),
@@ -336,85 +332,68 @@ const GREEN = '#1f7a4d'
 
 const DEFS: SegDef[] = [
   {
-    id: 'fresh', label: 'Friss', emoji: '🍼',
-    pool: fresh, map: MAP1,
-    tip: 'A találatok feltöltési idő szerint vannak rendezve — lehet, hogy te vagy az első ember, aki valaha látja őket.',
+    id: 'fresh', emoji: '🍼',
+    pool: fresh, sort: 'date',
   },
   {
-    id: 'digicam', label: 'Digikamera', emoji: '📷',
-    pool: digicam, map: MAP2,
-    tip: 'Görgess túl mindenen, ami népszerű — a temető pár találattal lejjebb kezdődik.',
+    id: 'digicam', emoji: '📷',
+    pool: digicam,
   },
   {
-    id: 'ancient', label: 'Őskor', emoji: '🦖',
-    pool: ancient, map: MAP3,
-    tip: 'Ezek 2006–2008-as kövületek. Külön respekt mindenért, ami ennyi év után is 0 megtekintésen áll.',
+    id: 'ancient', emoji: '🦖',
+    pool: ancient,
   },
   {
-    id: 'gamer', label: 'Gamer', emoji: '🕹️',
-    pool: gamer, map: MAP2,
-    tip: 'Automatikusan elnevezett játékfelvételek, amiknek soha senki nem adott címet. Tiszta 2012.',
+    id: 'gamer', emoji: '🕹️',
+    pool: gamer,
   },
   {
-    id: 'chat', label: 'Chat', emoji: '💬',
-    pool: chatApps, map: MAP2,
-    tip: 'Videók, amik valakinek a csoportcsetjéből egyenesen a YouTube-ra szöktek.',
+    id: 'chat', emoji: '💬',
+    pool: chatApps,
   },
   {
-    id: 'camcorder', label: 'Kamkorder', emoji: '📼',
-    pool: camcorder, map: MAP2,
-    tip: 'Egyenesen egy MiniDV-kazettáról vagy egy otthon írt DVD-ről.',
+    id: 'camcorder', emoji: '📼',
+    pool: camcorder,
   },
   {
-    id: 'webcam', label: 'Webkamera', emoji: '🎥',
-    pool: webcams, map: MAP2,
-    tip: 'A hálószobai webkamerás monológok aranykora.',
+    id: 'webcam', emoji: '🎥',
+    pool: webcams,
   },
   {
-    id: 'world', label: 'Nagyvilág', emoji: '🌍',
-    pool: worldTour, map: MAP2,
-    tip: 'A lomtár globális. Bónuszpont, ha a címet sem tudod elolvasni.',
+    id: 'world', emoji: '🌍',
+    pool: worldTour,
   },
   {
-    id: 'screen', label: 'Képernyő', emoji: '🖥️',
-    pool: screenRecs, map: MAP2,
-    tip: 'Valaki felvette a képernyőjét, aztán elfelejtette, minek.',
+    id: 'screen', emoji: '🖥️',
+    pool: screenRecs,
   },
   {
-    id: 'phones', label: 'Régi mobil', emoji: '📱',
-    pool: oldPhones, map: MAP2,
-    tip: 'Olyan telefonról feltöltve, aminek még gombjai voltak.',
+    id: 'phones', emoji: '📱',
+    pool: oldPhones,
   },
   {
-    id: 'editors', label: 'Szerkesztő', emoji: '🎬',
-    pool: editors, map: MAP2,
-    tip: 'Megnyitottak egy vágóprogramot, alapnéven exportáltak, és eltűntek.',
+    id: 'editors', emoji: '🎬',
+    pool: editors,
   },
   {
-    id: 'drones', label: 'Drónok', emoji: '🚁',
-    pool: drones, map: MAP2,
-    tip: 'Sosem látott légifelvétel a Föld egy pontjáról.',
+    id: 'drones', emoji: '🚁',
+    pool: drones,
   },
   {
-    id: 'dates', label: 'Dátumok', emoji: '📅',
-    pool: dateStamps, map: MAP2,
-    tip: 'Egy cím, ami csak egy dátum. Mi történt aznap? Egy módon derül ki.',
+    id: 'dates', emoji: '📅',
+    pool: dateStamps,
   },
   {
-    id: 'ext', label: 'Fájltípus', emoji: '🧩',
-    pool: fileExt, map: MAP2,
-    tip: 'Ha a teljes cím egy fájlkiterjesztés, ott senki nem hajtott a nézettségre.',
+    id: 'ext', emoji: '🧩',
+    pool: fileExt,
   },
   {
-    id: 'slides', label: 'Diavetítés', emoji: '💾',
-    pool: slideshows, map: MAP2,
-    tip: 'Automata fotó-diavetítések jogdíjmentes zenével. Színtiszta nosztalgia.',
+    id: 'slides', emoji: '💾',
+    pool: slideshows,
   },
   {
-    id: 'wild', label: 'Joker', emoji: '🔮',
+    id: 'wild', emoji: '🔮',
     pool: [], // filled below
-    map: MAP2,
-    tip: 'A zöld nulla. Bármi lehet az egész temetőből.',
   },
 ]
 
@@ -427,13 +406,10 @@ DEFS[DEFS.length - 1].pool = [
 
 export const SEGMENTS: Segment[] = DEFS.map((d, i) => ({
   id: d.id,
-  label: d.label,
   emoji: d.emoji,
   color: d.id === 'wild' ? GREEN : i % 2 === 0 ? RED : BLACK,
   gen: () => {
     const g = pick(d.pool)()
-    const map = g.map ?? d.map
-    const sort = g.sort ?? (map === MAP1 ? 'date' : 'none')
-    return { query: g.query, sort: sort as SortMode, map, tip: d.tip }
+    return { query: g.query, sort: g.sort ?? d.sort ?? 'none' }
   },
 }))

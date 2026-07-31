@@ -1,5 +1,5 @@
 import { bad } from '@/server/game'
-import { collect, fetchInitialData } from '@/server/yt'
+import { collect, fetchInitialData, parseCount, parseDate } from '@/server/yt'
 import type { YtVideoDetails } from '@/types'
 
 export const dynamic = 'force-dynamic'
@@ -16,23 +16,24 @@ export async function GET(req: Request) {
   if (!data) return Response.json({ error: 'fetch-failed' }, { status: 502 })
 
   const likeTitle =
-    collect<ButtonViewModel>(data, 'buttonViewModel').find((b) => b.iconName === 'LIKE')?.title ??
-    ''
-
-  const dateText = collect<PrimaryInfo>(data, 'videoPrimaryInfoRenderer')[0]?.dateText?.simpleText
+    collect<ButtonViewModel>(data, 'buttonViewModel').find((b) => b.iconName === 'LIKE')?.title ?? ''
+  // a title without digits means the count is hidden (the button just says "Like")
+  const likes = parseCount(/\d/.test(likeTitle) ? likeTitle : '')
 
   // comments are loaded lazily; only the disabled state ships with the page.
   // structural check (language-independent): a message instead of a continuation.
   const commentSection = collect<ItemSection>(data, 'itemSectionRenderer').find(
     (s) => s.sectionIdentifier === 'comment-item-section',
   )
-  const commentsDisabled = !!commentSection?.contents?.some((c) => 'messageRenderer' in c)
 
   const details: YtVideoDetails = {
-    // a non-numeric title means the count is hidden (the button just says "Tetszik")
-    likes: /\d/.test(likeTitle) ? likeTitle : '',
-    commentsDisabled,
-    uploaded: (dateText ?? '').replace(/^[^:]+:\s*/, ''),
+    likes: likes.value,
+    likesText: likes.text,
+    likesApprox: likes.approx,
+    commentsDisabled: !!commentSection?.contents?.some((c) => 'messageRenderer' in c),
+    uploaded: parseDate(
+      collect<PrimaryInfo>(data, 'videoPrimaryInfoRenderer')[0]?.dateText?.simpleText ?? '',
+    ),
     description: (
       collect<{ content?: string }>(data, 'attributedDescription')[0]?.content ?? ''
     ).slice(0, 600),

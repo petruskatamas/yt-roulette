@@ -131,6 +131,35 @@ button {
   margin-top: 2.4rem;
 }
 
+.lang-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.2rem;
+}
+
+.lang-row .hint {
+  margin-right: auto;
+}
+
+.lang-select {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.5rem 0.8rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.lang-select:focus,
+.lang-select:hover {
+  border-color: var(--gold);
+}
+
 .setup-card h2 {
   margin: 0 0 1rem;
   font-size: 1.15rem;
@@ -311,7 +340,8 @@ button {
   overflow-y: auto;
 }
 
-.z-top {
+/* two classes so it outranks .editor-overlay regardless of source order */
+.editor-overlay.z-top {
   z-index: 90;
 }
 

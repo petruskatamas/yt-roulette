@@ -1,5 +1,5 @@
 import { bad } from '@/server/game'
-import { collect, fetchInitialData } from '@/server/yt'
+import { collect, fetchInitialData, parseCount } from '@/server/yt'
 import type { YtChannel } from '@/types'
 
 export const dynamic = 'force-dynamic'
@@ -10,7 +10,6 @@ type ContentMetadata = {
 type ChannelMetadata = {
   title?: string
   description?: string
-  externalId?: string
   avatar?: { thumbnails?: { url: string }[] }
 }
 
@@ -28,13 +27,18 @@ export async function GET(req: Request) {
     .map((p) => p.text?.content ?? '')
     .filter(Boolean)
 
+  const subs = parseCount(parts.find((p) => /subscriber/i.test(p)) ?? '')
+  const videos = parseCount(parts.find((p) => /\bvideo/i.test(p)) ?? '')
   const thumbs = meta.avatar?.thumbnails ?? []
+
   const channel: YtChannel = {
     id,
     name: meta.title ?? '',
     avatar: thumbs[thumbs.length - 1]?.url ?? '',
-    subscribers: parts.find((p) => /feliratkoz|subscrib/i.test(p)) ?? '',
-    videoCount: parts.find((p) => /videó|video/i.test(p)) ?? '',
+    subscribers: subs.value,
+    subscribersText: subs.text,
+    subscribersApprox: subs.approx,
+    videoCount: videos.value,
     description: (meta.description ?? '').slice(0, 400),
   }
   return Response.json({ channel })

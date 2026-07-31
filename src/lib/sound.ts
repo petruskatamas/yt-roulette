@@ -84,7 +84,6 @@ export function pop() {
   osc.stop(t + 0.1)
 }
 
-// spin start: rising filtered-noise sweep
 export function whoosh() {
   const c = ac()
   if (!c || c.state !== 'running') return
@@ -110,7 +109,6 @@ export function whoosh() {
   src.stop(t + dur)
 }
 
-// soft blip when a mark toast lands on the TV
 export function markTick() {
   const c = ac()
   if (!c || c.state !== 'running') return
@@ -121,7 +119,6 @@ export function buzz(pattern: number | number[]) {
   if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate(pattern)
 }
 
-// wheel stop: low thump + rising two-note ding
 export function land() {
   const c = ac()
   if (!c || c.state !== 'running') return
@@ -131,7 +128,7 @@ export function land() {
   blip(t + 0.14, 1318.5, 0.45, 0.1, 'triangle')
 }
 
-// bingo: cymbal crash, C-major run over a bass line, held detuned chord
+// C-major run over a bass line, then a held detuned chord
 export function fanfare() {
   const c = ac()
   if (!c || c.state !== 'running') return
