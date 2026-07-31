@@ -49,6 +49,33 @@ export type GamePlayer = {
   cells: Cell[] | null // null until the player submits their card
 }
 
+export type YtResult = {
+  id: string
+  title: string
+  channel: string
+  channelId: string
+  published: string // relative text as shown on YouTube, e.g. "13 évvel ezelőtt"
+  thumb: string
+  views: number // -1 = unknown
+  duration: string // "1:23"
+}
+
+export type YtVideoDetails = {
+  likes: string // as shown; YouTube abbreviates ("19 M"), '' = hidden
+  commentsDisabled: boolean
+  uploaded: string // exact date as shown, e.g. "2013. jan. 4."
+  description: string
+}
+
+export type YtChannel = {
+  id: string
+  name: string
+  avatar: string
+  subscribers: string // as shown, e.g. "3 feliratkozó"
+  videoCount: string // as shown, e.g. "12 videó"
+  description: string
+}
+
 export type MarkEvent = {
   player: string
   color: string

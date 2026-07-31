@@ -14,7 +14,6 @@ import {
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
 import { useGame, useWakeLock } from '@/lib/gameClient'
 import { CHALLENGES, hasBingo } from '../data/challenges'
-import { ytUrl } from '../data/patterns'
 import { buzz, initSoundUnlock, pop } from '../lib/sound'
 import type { GamePlayer } from '../types'
 import { BingoCard } from '../components/BingoCard'
@@ -166,7 +165,7 @@ function CardBuilder({
     <div className="player-screen">
       <header className="pheader">
         <div className="pname" style={{ color: player.color }}>✍️ {player.name}</div>
-        <div className="hint">írd meg a bingókártyád</div>
+        <div className="hint">Írd meg a bingókártyád</div>
       </header>
 
       <p className="builder-intro">
@@ -301,7 +300,6 @@ export function PlayerView({ playerId }: { playerId: string }) {
   const myTurn = spinner?.id === me.id
   const marks = cells.filter((c) => c.marked && !c.free).length
   const iWon = hasBingo(cells)
-  const lastSpin = state.lastSpin
 
   const toggle = (i: number) => {
     if (!cells[i].marked) {
@@ -339,19 +337,6 @@ export function PlayerView({ playerId }: { playerId: string }) {
 
       {iWon && !state.celebration && (
         <div className="mini-celebration">🏆 BINGÓ 🏆</div>
-      )}
-
-      {lastSpin && (
-        <a
-          className="pspin"
-          href={ytUrl(lastSpin.query, lastSpin.sort)}
-          target="_blank"
-          rel="noreferrer"
-        >
-          <span className="pspin-label">{lastSpin.emoji} aktuális keresés</span>
-          <span className="pspin-query">{lastSpin.query}</span>
-          <span className="pspin-open">megnyit ↗</span>
-        </a>
       )}
 
       <BingoCard cells={cells} onToggle={toggle} />

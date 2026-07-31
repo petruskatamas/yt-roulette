@@ -1,0 +1,73 @@
+import { bad } from '@/server/game'
+import { collect, fetchInitialData } from '@/server/yt'
+import type { YtResult } from '@/types'
+
+export const dynamic = 'force-dynamic'
+
+type Run = {
+  text: string
+  navigationEndpoint?: { browseEndpoint?: { browseId?: string } }
+}
+type VideoRenderer = {
+  videoId?: string
+  title?: { runs?: Run[] }
+  ownerText?: { runs?: Run[] }
+  publishedTimeText?: { simpleText?: string }
+  viewCountText?: { simpleText?: string; runs?: Run[] }
+  lengthText?: { simpleText?: string }
+  thumbnail?: { thumbnails?: { url: string }[] }
+}
+
+function parseViews(vr: VideoRenderer): number {
+  const text =
+    vr.viewCountText?.simpleText ??
+    vr.viewCountText?.runs?.map((r) => r.text).join('') ??
+    ''
+  const digits = text.replace(/\D/g, '')
+  if (digits) return Number(digits)
+  if (/nincs|no views/i.test(text)) return 0
+  return -1
+}
+
+export async function GET(req: Request) {
+  const url = new URL(req.url)
+  const q = url.searchParams.get('q') ?? ''
+  const sort = url.searchParams.get('sort')
+  if (!q) return bad(400, 'missing q')
+
+  const ytUrl = new URL('https://www.youtube.com/results')
+  ytUrl.searchParams.set('search_query', q)
+  if (sort === 'date') ytUrl.searchParams.set('sp', 'CAI=')
+
+  const data = await fetchInitialData(ytUrl)
+  if (!data) return Response.json({ error: 'fetch-failed' }, { status: 502 })
+  const renderers = collect<VideoRenderer>(data, 'videoRenderer')
+
+  const seen = new Set<string>()
+  const results: YtResult[] = []
+  for (const vr of renderers) {
+    const id = vr.videoId
+    if (!id || seen.has(id)) continue
+    seen.add(id)
+    const thumbs = vr.thumbnail?.thumbnails ?? []
+    results.push({
+      id,
+      title: vr.title?.runs?.map((r) => r.text).join('') ?? '',
+      channel: vr.ownerText?.runs?.map((r) => r.text).join('') ?? '',
+      channelId:
+        vr.ownerText?.runs?.[0]?.navigationEndpoint?.browseEndpoint?.browseId ?? '',
+      published: vr.publishedTimeText?.simpleText ?? '',
+      thumb: thumbs[thumbs.length - 1]?.url ?? '',
+      views: parseViews(vr),
+      duration: vr.lengthText?.simpleText ?? '',
+    })
+    if (results.length >= 30) break
+  }
+
+  // the graveyard first: lowest view count on top (date searches keep newest-first)
+  if (sort !== 'date') {
+    results.sort((a, b) => (a.views < 0 ? 1 : b.views < 0 ? -1 : a.views - b.views))
+  }
+
+  return Response.json({ results })
+}

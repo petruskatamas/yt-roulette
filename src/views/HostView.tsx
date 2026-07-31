@@ -3,7 +3,7 @@ import { openOnTv, useGame, useJoinBase, useWakeLock } from '@/lib/gameClient'
 import { SEGMENTS, ytUrl } from '../data/patterns'
 import { bestLineProgress, hasBingo } from '../data/challenges'
 import { fanfare, initSoundUnlock, markTick } from '../lib/sound'
-import type { GamePlayer, Segment, Spin } from '../types'
+import type { GamePlayer, Segment, Spin, YtChannel, YtResult, YtVideoDetails } from '../types'
 import { Wheel } from '../components/Wheel'
 import type { WheelHandle } from '../components/Wheel'
 import { BingoCard } from '../components/BingoCard'
@@ -76,6 +76,74 @@ export function HostView() {
     }
     if (lastMarkTs) markTick()
   }, [lastMarkTs])
+
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [playing, setPlaying] = useState<YtResult | null>(null)
+  const [results, setResults] = useState<YtResult[] | null>(null)
+  const [searchFailed, setSearchFailed] = useState(false)
+  const [channel, setChannel] = useState<YtChannel | null>(null)
+  const [details, setDetails] = useState<YtVideoDetails | null>(null)
+
+  const playingId = playing?.id
+  useEffect(() => {
+    if (!playingId) return
+    let cancelled = false
+    setDetails(null)
+    fetch(`/api/video?id=${playingId}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((d) => {
+        if (!cancelled) setDetails(d.details)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [playingId])
+
+  const playingChannelId = playing?.channelId
+  useEffect(() => {
+    if (!playingChannelId) return
+    let cancelled = false
+    setChannel(null)
+    fetch(`/api/channel?id=${playingChannelId}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((d) => {
+        if (!cancelled) setChannel(d.channel)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [playingChannelId])
+
+  const query = state?.lastSpin?.query
+  const sort = state?.lastSpin?.sort
+  useEffect(() => {
+    if (!searchOpen || !query) return
+    let cancelled = false
+    setResults(null)
+    setSearchFailed(false)
+    setPlaying(null)
+    fetch(`/api/search?q=${encodeURIComponent(query)}&sort=${sort}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((d) => {
+        if (!cancelled) setResults(d.results)
+      })
+      .catch(() => {
+        if (!cancelled) setSearchFailed(true)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [searchOpen, query, sort])
+
+  const roundOver = !!state?.roundWonBy
+  useEffect(() => {
+    if (roundOver) {
+      setSearchOpen(false)
+      setPlaying(null)
+    }
+  }, [roundOver])
 
   if (!state) {
     return (
@@ -165,15 +233,6 @@ export function HostView() {
     setCopied(false)
   }
 
-  const reroll = () => {
-    if (!lastSpin) return
-    const segment = SEGMENTS.find((s) => s.id === lastSpin.segmentId)
-    if (!segment) return
-    const q = segment.gen()
-    post('/reroll', { spin: { ...lastSpin, ...q } })
-    setCopied(false)
-  }
-
   const copyQuery = async () => {
     if (!lastSpin) return
     try {
@@ -231,13 +290,14 @@ export function HostView() {
                   <span className="copy-hint">{copied ? '✓ másolva' : '⧉'}</span>
                 </button>
                 <div className="spin-actions">
-                  <button
-                    className="btn btn-primary"
+                  <button className="btn btn-primary" onClick={() => setSearchOpen(true)}>
+                    🔍 Keresés
+                  </button>                  <button
+                    className="btn btn-ghost"
                     onClick={() => openOnTv(ytUrl(lastSpin.query, lastSpin.sort))}
                   >
-                    Keresés a YouTube-on
+                    Böngészőben ↗
                   </button>
-                  <button className="btn" onClick={reroll}>🎲 Új számok</button>
                 </div>
                 {lastSpin.sort === 'date' && (
                   <div className="spin-note">feltöltési idő szerint rendezve — a legújabb elöl</div>
@@ -316,8 +376,145 @@ export function HostView() {
         </div>
       )}
 
+      {searchOpen && lastSpin && (
+        <div className="search-screen">
+          <div className="search-head">
+            {playing && (
+              <button className="btn" onClick={() => setPlaying(null)}>◂ Találatok</button>
+            )}
+            <span className="search-query">{lastSpin.query}</span>
+            <button
+              className="btn btn-ghost"
+              onClick={() =>
+                openOnTv(
+                  playing
+                    ? `https://www.youtube.com/watch?v=${playing.id}`
+                    : ytUrl(lastSpin.query, lastSpin.sort),
+                )
+              }
+            >
+              Böngészőben ↗
+            </button>
+            <button className="btn" onClick={() => setSearchOpen(false)}>✕ Bezárás</button>
+          </div>
+
+          {playing ? (
+            <div className="watch-layout">
+              <div className="watch-main">
+                <iframe
+                  src={`https://www.youtube.com/embed/${playing.id}?autoplay=1&rel=0`}
+                  allow="autoplay; encrypted-media; picture-in-picture"
+                  allowFullScreen
+                  title="YouTube lejátszó"
+                />
+                <h2 className="watch-title">{playing.title}</h2>
+                <div className="watch-meta">
+                  <span className={playing.views === 0 ? 'zero-views' : ''}>
+                    {playing.views < 0
+                      ? '? megtekintés'
+                      : playing.views === 0
+                        ? '☠️ 0 megtekintés'
+                        : `${playing.views.toLocaleString('hu-HU')} megtekintés`}
+                  </span>
+                  <span className={details?.likes === '0' ? 'zero-views' : ''}>
+                    · {details ? (details.likes === '' ? 'rejtett' : details.likes) : '…'} lájk
+                  </span>
+                  {details?.commentsDisabled && (
+                    <span className="zero-views">· 🚫 kikapcsolt kommentek</span>
+                  )}
+                  <span>· {details?.uploaded || playing.published}</span>
+                </div>
+                {details?.description && (
+                  <p className="watch-desc">{details.description}</p>
+                )}
+              </div>
+
+              <aside className="watch-side">
+                <div className="channel-card">
+                  {channel?.avatar && (
+                    <img className="channel-avatar" src={channel.avatar} alt="" />
+                  )}
+                  <div className="channel-name">{channel?.name ?? playing.channel}</div>
+                  <div className="channel-stats">
+                    <span>{channel?.subscribers || 'rejtett feliratkozók'}</span>
+                    {channel?.videoCount && <span>· {channel.videoCount}</span>}
+                  </div>
+                  {channel?.description && (
+                    <p className="channel-desc">{channel.description}</p>
+                  )}
+                  <button
+                    className="btn btn-ghost"
+                    onClick={() =>
+                      openOnTv(`https://www.youtube.com/channel/${playing.channelId}`)
+                    }
+                  >
+                    Csatorna megnyitása ↗
+                  </button>
+                </div>
+
+                <div className="side-results">
+                  {results?.filter((r) => r.id !== playing.id).slice(0, 12).map((r) => (
+                    <button key={r.id} className="yt-row is-compact" onClick={() => setPlaying(r)}>
+                      <span className="yt-thumb">
+                        <img src={r.thumb} alt="" loading="lazy" />
+                        {r.duration && <span className="yt-duration">{r.duration}</span>}
+                      </span>
+                      <span className="yt-info">
+                        <span className="yt-title">{r.title}</span>
+                        <span className="yt-meta">{r.channel}</span>
+                        <span className={`yt-meta ${r.views === 0 ? 'zero-views' : ''}`}>
+                          {r.views < 0 ? '?' : r.views.toLocaleString('hu-HU')} megtekintés
+                          {r.published && ` · ${r.published}`}
+                        </span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </aside>
+            </div>
+          ) : searchFailed ? (
+            <div className="search-empty">
+              <p className="hint">Nem sikerült lekérni a találatokat — nyisd meg böngészőben.</p>
+              <button
+                className="btn btn-primary"
+                onClick={() => openOnTv(ytUrl(lastSpin.query, lastSpin.sort))}
+              >
+                Megnyitás Böngészőben ↗
+              </button>
+            </div>
+          ) : results == null ? (
+            <p className="hint search-empty">Keresés…</p>
+          ) : results.length === 0 ? (
+            <p className="hint search-empty">Semmi találat — pörgessetek újra</p>
+          ) : (
+            <div className="search-list">
+              {results.map((r) => (
+                <button key={r.id} className="yt-row" onClick={() => setPlaying(r)}>
+                  <span className="yt-thumb">
+                    <img src={r.thumb} alt="" loading="lazy" />
+                    {r.duration && <span className="yt-duration">{r.duration}</span>}
+                  </span>
+                  <span className="yt-info">
+                    <span className="yt-title">{r.title}</span>
+                    <span className={`yt-stats ${r.views === 0 ? 'zero-views' : ''}`}>
+                      {r.views < 0
+                        ? '? megtekintés'
+                        : r.views === 0
+                          ? '☠️ 0 megtekintés'
+                          : `${r.views.toLocaleString('hu-HU')} megtekintés`}
+                      {r.published && <span className="yt-meta"> · {r.published}</span>}
+                    </span>
+                    <span className="yt-meta">{r.channel}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {confirmBox && (
-        <div className="editor-overlay" onClick={() => setConfirmBox(null)}>
+        <div className="editor-overlay z-top" onClick={() => setConfirmBox(null)}>
           <div className="editor-card" onClick={(e) => e.stopPropagation()}>
             <p className="confirm-text">{confirmBox.text}</p>
             <div className="editor-actions">
