@@ -1,8 +1,10 @@
 import type { Cell, Locale } from '../types'
 import { en } from './challenges/en'
+import { es } from './challenges/es'
+import { fr } from './challenges/fr'
 import { hu } from './challenges/hu'
 
-const LISTS: Record<Locale, string[]> = { en, hu }
+const LISTS: Record<Locale, string[]> = { en, es, fr, hu }
 
 /** Suggestions offered while writing a card; not the card itself. */
 export const challengesFor = (locale: Locale | undefined): string[] => LISTS[locale ?? 'en'] ?? en

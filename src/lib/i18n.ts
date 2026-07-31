@@ -1,13 +1,15 @@
 import { en } from '../messages/en'
+import { es } from '../messages/es'
+import { fr } from '../messages/fr'
 import { hu } from '../messages/hu'
 import type { Locale, RelTime } from '../types'
 
 /** English is the source of truth: every other locale must satisfy this shape. */
 export type Messages = typeof en
 
-const ALL: Record<Locale, Messages> = { en, hu }
+const ALL: Record<Locale, Messages> = { en, es, fr, hu }
 
-export const LOCALES: Locale[] = ['en', 'hu']
+export const LOCALES: Locale[] = ['en', 'es', 'fr', 'hu']
 
 export const messages = (locale: Locale | undefined): Messages => ALL[locale ?? 'en'] ?? en
 

@@ -1,4 +1,4 @@
-export type Locale = 'en' | 'hu'
+export type Locale = 'en' | 'hu' | 'fr' | 'es'
 
 export type Cell = {
   text: string
