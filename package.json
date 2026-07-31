@@ -2,6 +2,26 @@
   "name": "yt-roulette",
   "private": true,
   "version": "0.0.0",
+  "description": "Local party game: spin a roulette of YouTube's default-filename search patterns and play bingo on your phone",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/petruskatamas/yt-roulette.git"
+  },
+  "bugs": {
+    "url": "https://github.com/petruskatamas/yt-roulette/issues"
+  },
+  "homepage": "https://github.com/petruskatamas/yt-roulette#readme",
+  "keywords": [
+    "party-game",
+    "bingo",
+    "youtube",
+    "local-multiplayer",
+    "nextjs"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "type": "module",
   "scripts": {
     "dev": "next dev -H 0.0.0.0",

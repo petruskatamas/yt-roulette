@@ -1,0 +1,37 @@
+name: Bug report
+description: Something in the game misbehaves
+labels: [bug]
+body:
+  - type: dropdown
+    id: screen
+    attributes:
+      label: Which screen?
+      options:
+        - TV / host
+        - Phone / player
+        - Both
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, what you got instead.
+    validations:
+      required: true
+  - type: input
+    id: query
+    attributes:
+      label: Search query involved (if any)
+      description: The query the wheel produced, e.g. `"IMG 3201"`
+  - type: input
+    id: env
+    attributes:
+      label: Browser / OS / Node version
+      placeholder: Chrome 131 on macOS 15, Node 22
+  - type: checkboxes
+    id: mode
+    attributes:
+      label: Run mode
+      options:
+        - label: I was running `npm run build && npm start` (not `npm run dev`)

@@ -1,0 +1,46 @@
+name: New search pattern
+description: A default filename or phrase that surfaces zero-view videos
+labels: [pattern]
+body:
+  - type: textarea
+    id: pattern
+    attributes:
+      label: The pattern
+      description: |
+        One per line. Show the shape, e.g. `"DSCN####"` (0000–9999) or
+        `"Sent from my Sony Ericsson"`.
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Where does it come from?
+      placeholder: Canon camcorders, Windows Movie Maker default export, a 2009 phone…
+  - type: dropdown
+    id: segment
+    attributes:
+      label: Which wheel segment does it fit?
+      options:
+        - Fresh (brand-new uploads)
+        - Digicam
+        - Camcorder
+        - Old phone
+        - Ancient (pre-2009)
+        - Gamer
+        - Chat apps
+        - Screen recordings
+        - Editors
+        - Drones / action cams
+        - Datestamps
+        - File types
+        - Slideshows
+        - World (non-English filenames)
+        - Webcam
+        - Joker / not sure
+  - type: checkboxes
+    id: tested
+    attributes:
+      label: Verification
+      options:
+        - label: I searched this on YouTube and it actually surfaces low-view videos
+          required: true
