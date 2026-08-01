@@ -80,6 +80,32 @@ export type GamePlayer = {
   cells: Cell[] | null // null until the player submits their card
 }
 
+export type Claim = {
+  id: string
+  playerId: string
+  playerName: string
+  color: string
+  cellIndex: number
+  text: string
+  videoTitle: string
+  thumb: string
+  votes: Record<string, boolean> // voterId -> valid?
+}
+
+export type VoteEvent = {
+  valid: boolean
+  n: number // how many votes that claim had after this one
+  ts: number
+}
+
+export type Verdict = {
+  playerName: string
+  color: string
+  text: string
+  accepted: boolean
+  ts: number
+}
+
 export type MarkEvent = {
   player: string
   color: string
@@ -96,6 +122,11 @@ export type GameState = {
   celebration: { name: string; ts: number } | null
   spinRequested: boolean // current player asked the TV to spin
   searchOpen: boolean // the TV is browsing results / watching a video
+  voteMode: boolean // marks become claims the room ratifies
+  claims: Claim[] // pending claims, oldest first
+  lastVote: VoteEvent | null
+  lastVerdict: Verdict | null
+  nowPlaying: { title: string; thumb: string } | null // marking is only open while this is set
   roundWonBy: string | null // player id of this round's first bingo
   marks: MarkEvent[]
   version: number

@@ -118,8 +118,25 @@ export const es: Messages = {
     tvBusy: 'viendo un vídeo…',
     bingoBanner: (name: string) => `BINGO — ¡${name}!`,
     youWon: 'Tienes BINGO — ¡grítalo!',
-    markedHint: (n: number) => `${n}/24 marcadas · toca una casilla cuando la veas`,
     reconnecting: 'reconectando…',
+  },
+
+  vote: {
+    mode: 'Voto colectivo',
+    modeHint: 'las casillas las aprueba el grupo',
+    reviewTitle: 'Revisión de casillas',
+    claims: (n: number) => `${n} ${n === 1 ? 'casilla por juzgar' : 'casillas por juzgar'}`,
+    claimedBy: (name: string) => `${name} reclama`,
+    seenIn: (title: string) => `en «${title}»`,
+    waitingFor: (n: number) => `${n} ${n === 1 ? 'voto pendiente' : 'votos pendientes'}`,
+    decideNow: 'Decidir ahora',
+    accepted: 'ACEPTADA',
+    rejected: 'RECHAZADA',
+    valid: 'Vale',
+    invalid: 'No vale',
+    yourClaim: 'El grupo está juzgando tu casilla…',
+    voted: 'Voto emitido — esperando a los demás…',
+    spinBlocked: 'votación en curso…',
   },
 
   card: {

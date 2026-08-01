@@ -118,8 +118,25 @@ export const fr: Messages = {
     tvBusy: 'vidéo en cours…',
     bingoBanner: (name: string) => `BINGO — ${name} !`,
     youWon: 'Tu as BINGO — crie-le !',
-    markedHint: (n: number) => `${n}/24 cochées · touche une case quand tu la repères`,
     reconnecting: 'reconnexion…',
+  },
+
+  vote: {
+    mode: 'Vote collectif',
+    modeHint: 'les cases doivent être validées par le groupe',
+    reviewTitle: 'Validation des cases',
+    claims: (n: number) => `${n} ${n === 1 ? 'case à juger' : 'cases à juger'}`,
+    claimedBy: (name: string) => `${name} revendique`,
+    seenIn: (title: string) => `dans « ${title} »`,
+    waitingFor: (n: number) => `${n} ${n === 1 ? 'vote manquant' : 'votes manquants'}`,
+    decideNow: 'Décider maintenant',
+    accepted: 'VALIDÉ',
+    rejected: 'REFUSÉ',
+    valid: 'Valable',
+    invalid: 'Non',
+    yourClaim: 'Le groupe juge ta case…',
+    voted: 'Vote enregistré — on attend les autres…',
+    spinBlocked: 'vote en cours…',
   },
 
   card: {

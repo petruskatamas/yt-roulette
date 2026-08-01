@@ -16,7 +16,7 @@ import { useGame, useWakeLock } from '@/lib/gameClient'
 import { challengesFor, hasBingo } from '../data/challenges'
 import { messages } from '../lib/i18n'
 import type { Messages } from '../lib/i18n'
-import { buzz, initSoundUnlock, pop } from '../lib/sound'
+import { buzz, initSoundUnlock, pop, voteBlip } from '../lib/sound'
 import type { GamePlayer, Locale } from '../types'
 import { BingoCard } from '../components/BingoCard'
 
@@ -304,9 +304,15 @@ export function PlayerView({ playerId }: { playerId: string }) {
   }
 
   const cells = me.cells
+  const myClaims = new Set(
+    state.claims.filter((c) => c.playerId === me.id).map((c) => c.cellIndex),
+  )
+  const claim = state.claims[0]
+  const canMark = !!state.nowPlaying
+  const iAmClaimant = claim?.playerId === me.id
+  const myVote = claim && !iAmClaimant ? claim.votes[me.id] : undefined
   const spinner = state.players[state.current]
   const myTurn = spinner?.id === me.id
-  const marks = cells.filter((c) => c.marked && !c.free).length
   const iWon = hasBingo(cells)
 
   const toggle = (i: number) => {
@@ -327,13 +333,52 @@ export function PlayerView({ playerId }: { playerId: string }) {
         </div>
       </header>
 
-      {state.phase === 'play' && myTurn && (
+      {claim && (
+        <div className="vote-panel">
+          <div className="vote-claim">
+            <span style={{ color: claim.color }}>{t.vote.claimedBy(claim.playerName)}</span>
+            <div className="vote-text">„{claim.text}”</div>
+          </div>
+          {iAmClaimant ? (
+            <div className="hint">{t.vote.yourClaim}</div>
+          ) : myVote !== undefined ? (
+            <div className="hint">{t.vote.voted}</div>
+          ) : (
+            <div className="vote-actions">
+              <button
+                className="btn btn-primary vote-yes"
+                onClick={() => {
+                  voteBlip(2)
+                  buzz(30)
+                  post('/vote', { playerId, claimId: claim.id, valid: true })
+                }}
+              >
+                {t.vote.valid}
+              </button>
+              <button
+                className="btn vote-no"
+                onClick={() => {
+                  voteBlip(0)
+                  buzz(30)
+                  post('/vote', { playerId, claimId: claim.id, valid: false })
+                }}
+              >
+                {t.vote.invalid}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {state.phase === 'play' && myTurn && !claim && (
         <button
           className="btn btn-primary spin-remote"
-          disabled={state.spinRequested || state.searchOpen}
+          disabled={state.spinRequested || state.searchOpen || state.claims.length > 0}
           onClick={() => post('/spin/request', { playerId })}
         >
-          {state.searchOpen
+          {state.claims.length > 0
+            ? t.vote.spinBlocked
+            : state.searchOpen
             ? t.player.tvBusy
             : state.spinRequested
               ? t.player.spinning
@@ -351,12 +396,13 @@ export function PlayerView({ playerId }: { playerId: string }) {
         <div className="mini-celebration">🏆 BINGÓ 🏆</div>
       )}
 
-      <BingoCard cells={cells} onToggle={toggle} t={t} />
+      <BingoCard cells={cells} onToggle={toggle} t={t} pending={myClaims} locked={!canMark} />
 
-      <div className="pfooter">
-        <span className="hint">{t.player.markedHint(marks)}</span>
-        {offline && <span className="offline-note">{t.player.reconnecting}</span>}
-      </div>
+      {offline && (
+        <div className="pfooter">
+          <span className="offline-note">{t.player.reconnecting}</span>
+        </div>
+      )}
       </div>
     </div>
   )

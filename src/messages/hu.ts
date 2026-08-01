@@ -115,8 +115,25 @@ export const hu: Messages = {
     tvBusy: 'videót néznek…',
     bingoBanner: (name: string) => `BINGÓ — ${name}!`,
     youWon: 'BINGÓD van — kiálts!',
-    markedHint: (n: number) => `${n}/24 jelölve · koppints a kockára, ha kiszúrtad`,
     reconnecting: 'újracsatlakozás…',
+  },
+
+  vote: {
+    mode: 'Közösségi szavazás',
+    modeHint: 'a jelöléseket a társaságnak jóvá kell hagynia',
+    reviewTitle: 'Jelölések elbírálása',
+    claims: (n: number) => `${n} jelölés vár döntésre`,
+    claimedBy: (name: string) => `${name} jelölte`,
+    seenIn: (title: string) => `ebben: „${title}”`,
+    waitingFor: (n: number) => `${n} szavazat hiányzik`,
+    decideNow: 'Döntsünk most',
+    accepted: 'ELFOGADVA',
+    rejected: 'ELUTASÍTVA',
+    valid: 'Ér',
+    invalid: 'Nem ér',
+    yourClaim: 'A társaság épp a jelölésedről dönt…',
+    voted: 'Szavaztál — várunk a többiekre…',
+    spinBlocked: 'szavazás van folyamatban…',
   },
 
   card: {

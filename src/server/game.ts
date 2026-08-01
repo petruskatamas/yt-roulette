@@ -2,7 +2,8 @@ import { spawn } from 'node:child_process'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { networkInterfaces } from 'node:os'
 import { join } from 'node:path'
-import type { GameState } from '../types'
+import { hasBingo } from '../data/challenges'
+import type { GamePlayer, GameState } from '../types'
 
 const DATA_DIR = join(process.cwd(), '.game')
 const DATA_FILE = join(DATA_DIR, 'state.json')
@@ -22,6 +23,11 @@ export function blankState(): GameState {
     celebration: null,
     spinRequested: false,
     searchOpen: false,
+    voteMode: false,
+    claims: [],
+    lastVote: null,
+    lastVerdict: null,
+    nowPlaying: null,
     roundWonBy: null,
     marks: [],
     version: 1,
@@ -35,6 +41,11 @@ function loadState(): GameState {
     s.locale ??= 'en'
     s.spinRequested ??= false
     s.searchOpen ??= false
+    s.voteMode ??= false
+    s.lastVote ??= null
+    s.lastVerdict ??= null
+    s.nowPlaying ??= null
+    if (!Array.isArray(s.claims)) s.claims = []
     s.roundWonBy ??= null
     if (!Array.isArray(s.marks)) s.marks = []
     s.marks.forEach((m) => { m.color ??= '#35d189' })
@@ -122,4 +133,52 @@ export async function readBody(req: Request): Promise<Record<string, unknown>> {
   } catch {
     return {}
   }
+}
+
+/** Marks a cell for real: records the toast and awards the round if it completes a line. */
+export function applyMark(state: GameState, player: GamePlayer, index: number) {
+  const cell = player.cells?.[index]
+  if (!player.cells || !cell || cell.free) return
+  const hadBingo = hasBingo(player.cells)
+  cell.marked = true
+  state.marks = [
+    { player: player.name, color: player.color, text: cell.text, ts: Date.now() },
+    ...state.marks,
+  ].slice(0, 6)
+  if (!hadBingo && hasBingo(player.cells)) {
+    state.celebration = { name: player.name, ts: Date.now() }
+    if (!state.roundWonBy) {
+      state.roundWonBy = player.id
+      player.wins++
+    }
+  }
+}
+
+export const claimVoters = (state: GameState, claimantId: string) =>
+  state.players.filter((p) => p.id !== claimantId)
+
+/**
+ * Resolves a claim once every eligible voter has voted (or when the host forces it).
+ * A tie goes to the claimant. Returns false while the vote is still open.
+ */
+export function resolveClaim(state: GameState, claimId: string, force = false): boolean {
+  const index = state.claims.findIndex((c) => c.id === claimId)
+  if (index < 0) return false
+  const claim = state.claims[index]
+  const cast = Object.values(claim.votes)
+  if (!force && cast.length < claimVoters(state, claim.playerId).length) return false
+
+  const yes = cast.filter(Boolean).length
+  const accepted = yes >= cast.length - yes
+  state.claims.splice(index, 1)
+  const player = state.players.find((p) => p.id === claim.playerId)
+  if (accepted && player) applyMark(state, player, claim.cellIndex)
+  state.lastVerdict = {
+    playerName: claim.playerName,
+    color: claim.color,
+    text: claim.text,
+    accepted,
+    ts: Date.now(),
+  }
+  return true
 }

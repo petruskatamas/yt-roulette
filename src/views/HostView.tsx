@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
+import type { CSSProperties } from 'react'
 import { openOnTv, useGame, useJoinBase, useWakeLock } from '@/lib/gameClient'
 import { SEGMENTS, ytUrl } from '../data/patterns'
 import { bestLineProgress, hasBingo } from '../data/challenges'
-import { fanfare, initSoundUnlock, land, markTick, wheelTicks } from '../lib/sound'
+import { accept, fanfare, initSoundUnlock, land, markTick, reject, voteBlip, wheelTicks } from '../lib/sound'
 import { fmtDate, fmtRelative, fmtViews, localeOptions, messages } from '../lib/i18n'
 import type { Messages } from '../lib/i18n'
-import type { GamePlayer, Segment, Spin, YtChannel, YtResult, YtVideoDetails } from '../types'
+import type { GamePlayer, Segment, Spin, Verdict, YtChannel, YtResult, YtVideoDetails } from '../types'
 import { Wheel } from '../components/Wheel'
 import type { WheelHandle } from '../components/Wheel'
 import { BingoCard } from '../components/BingoCard'
@@ -183,11 +184,47 @@ export function HostView() {
   // publish whether the TV is busy so phones can't spin mid-video;
   // comparing against the server value also self-heals after a host reload
   const serverSearchOpen = state?.searchOpen
+  const serverPlaying = state?.nowPlaying?.title ?? null
+  const localPlaying = playing?.title ?? null
   useEffect(() => {
-    if (serverSearchOpen !== undefined && serverSearchOpen !== searchOpen) {
-      post('/searching', { open: searchOpen })
+    if (serverSearchOpen === undefined) return
+    if (serverSearchOpen !== searchOpen || serverPlaying !== localPlaying) {
+      post('/searching', {
+        open: searchOpen,
+        video: playing ? { title: playing.title, thumb: playing.thumb } : null,
+      })
     }
-  }, [searchOpen, serverSearchOpen, post])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchOpen, serverSearchOpen, localPlaying, serverPlaying, post])
+
+  // vote/verdict events are timestamped by the server; only fresh ones make noise,
+  // so reloading the TV mid-game never replays what already happened
+  const FRESH_MS = 6000
+  const voteTs = state?.lastVote?.ts
+  const seenVote = useRef(0)
+  useEffect(() => {
+    const v = state?.lastVote
+    if (!v || !voteTs || voteTs === seenVote.current) return
+    seenVote.current = voteTs
+    if (Date.now() - voteTs < FRESH_MS) voteBlip(v.n - 1, v.valid)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [voteTs])
+
+  const [verdictCard, setVerdictCard] = useState<Verdict | null>(null)
+  const verdictTs = state?.lastVerdict?.ts
+  const seenVerdict = useRef(0)
+  useEffect(() => {
+    const v = state?.lastVerdict
+    if (!v || !verdictTs || verdictTs === seenVerdict.current) return
+    seenVerdict.current = verdictTs
+    if (Date.now() - verdictTs > FRESH_MS) return
+    setVerdictCard(v)
+    if (v.accepted) accept()
+    else reject()
+    const timer = setTimeout(() => setVerdictCard(null), 1900)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [verdictTs])
 
   const roundOver = !!state?.roundWonBy
   useEffect(() => {
@@ -238,6 +275,18 @@ export function HostView() {
               ))}
             </select>
           </div>
+
+          <label className="mode-row">
+            <input
+              type="checkbox"
+              checked={state.voteMode}
+              onChange={(e) => post('/vote-mode', { on: e.target.checked })}
+            />
+            <span>
+              <b>{t.vote.mode}</b>
+              <span className="hint"> — {t.vote.modeHint}</span>
+            </span>
+          </label>
 
           <h2>{t.setup.who}</h2>
           <div className="name-row">
@@ -321,6 +370,11 @@ export function HostView() {
     })
 
   const winner = state.players.find((p) => p.id === state.roundWonBy)
+  const claim = state.claims[0]
+  const voters = claim ? state.players.filter((p) => p.id !== claim.playerId) : []
+  const votesCast = claim ? Object.values(claim.votes) : []
+  const yesCount = votesCast.filter(Boolean).length
+  const noCount = votesCast.length - yesCount
 
   return (
     <div className="tv-screen">
@@ -625,6 +679,92 @@ export function HostView() {
                 {confirmBox.label}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {!winner && !searchOpen && (claim || verdictCard) && (
+        <div className="review-overlay">
+          <div className="review-stack">
+            {Array.from({ length: Math.min(3, Math.max(0, state.claims.length - 1)) }).map((_, k) => (
+              <div
+                key={k}
+                className="review-slab"
+                style={{ '--i': k + 1 } as CSSProperties}
+              />
+            ))}
+
+            {claim && (
+              <div className="review-card" key={claim.id}>
+                <div className="review-head">
+                  <span className="review-title">{t.vote.reviewTitle}</span>
+                  <span className="review-queue">
+                    {state.claims.map((c, i) => (
+                      <i key={c.id} className={i === 0 ? 'is-now' : ''} />
+                    ))}
+                  </span>
+                </div>
+
+                <div className="review-body">
+                  {claim.thumb && <img className="review-thumb" src={claim.thumb} alt="" />}
+                  <div className="review-main">
+                    <div className="review-claim" style={{ color: claim.color }}>
+                      {t.vote.claimedBy(claim.playerName)}
+                    </div>
+                    <div className="review-text">„{claim.text}”</div>
+                    {claim.videoTitle && (
+                      <div className="hint review-source">{t.vote.seenIn(claim.videoTitle)}</div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="vote-bar">
+                  <span className="bar-yes" style={{ flexGrow: yesCount }} />
+                  <span className="bar-gap" style={{ flexGrow: Math.max(0.001, voters.length - yesCount - noCount) }} />
+                  <span className="bar-no" style={{ flexGrow: noCount }} />
+                </div>
+
+                <div className="review-voters">
+                  {voters.map((p) => {
+                    const v = claim.votes[p.id]
+                    return (
+                      <div key={p.id} className="voter">
+                        <span
+                          className={`voter-chip ${v === true ? 'is-yes' : v === false ? 'is-no' : ''}`}
+                          style={{ borderColor: p.color }}
+                        >
+                          {v === true ? '✓' : v === false ? '✕' : p.name.slice(0, 1).toUpperCase()}
+                        </span>
+                        <span className="voter-name">{p.name}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                <div className="review-foot">
+                  <span className="hint">
+                    {t.vote.waitingFor(voters.length - yesCount - noCount)}
+                  </span>
+                  <button className="btn" onClick={() => post('/vote/close', { claimId: claim.id })}>
+                    {t.vote.decideNow}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {verdictCard && (
+              <div className={`review-card is-leaving ${claim ? 'is-over' : ''}`}>
+                <div className={`stamp ${verdictCard.accepted ? 'is-yes' : 'is-no'}`}>
+                  <div className="stamp-word">
+                    {verdictCard.accepted ? t.vote.accepted : t.vote.rejected}
+                  </div>
+                  <div className="stamp-claim">
+                    <b style={{ color: verdictCard.color }}>{verdictCard.playerName}</b>
+                    <span className="stamp-text">„{verdictCard.text}”</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

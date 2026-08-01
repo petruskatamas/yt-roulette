@@ -15,6 +15,10 @@ export async function POST(req: Request) {
   state.roundWonBy = null
   state.spinRequested = false
   state.searchOpen = false
+  state.claims = []
+  state.lastVote = null
+  state.lastVerdict = null
+  state.nowPlaying = null
   state.marks = []
   bump()
   return ok()

@@ -113,8 +113,25 @@ export const en = {
     tvBusy: 'watching a video…',
     bingoBanner: (name: string) => `BINGO — ${name}!`,
     youWon: 'You have BINGO — shout it!',
-    markedHint: (n: number) => `${n}/24 marked · tap a square when you spot it`,
     reconnecting: 'reconnecting…',
+  },
+
+  vote: {
+    mode: 'Community vote',
+    modeHint: 'marks must be approved by the room',
+    reviewTitle: 'Claim review',
+    claims: (n: number) => `${n} ${n === 1 ? 'claim' : 'claims'} to judge`,
+    claimedBy: (name: string) => `${name} claims`,
+    seenIn: (title: string) => `in “${title}”`,
+    waitingFor: (n: number) => `waiting for ${n} ${n === 1 ? 'vote' : 'votes'}`,
+    decideNow: 'Decide now',
+    accepted: 'ACCEPTED',
+    rejected: 'REJECTED',
+    valid: 'Valid',
+    invalid: 'Nope',
+    yourClaim: 'The room is judging your claim…',
+    voted: 'Vote cast — waiting for the others…',
+    spinBlocked: 'votes pending…',
   },
 
   card: {

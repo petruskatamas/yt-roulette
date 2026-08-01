@@ -8,6 +8,7 @@ export async function POST(req: Request) {
     return bad(400, 'not your turn')
   }
   if (state.searchOpen) return bad(409, 'tv is busy')
+  if (state.claims.length) return bad(409, 'claims pending')
   if (!state.spinRequested) {
     state.spinRequested = true
     bump()
