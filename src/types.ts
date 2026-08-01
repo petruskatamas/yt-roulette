@@ -95,6 +95,7 @@ export type GameState = {
   lastSpin: Spin | null
   celebration: { name: string; ts: number } | null
   spinRequested: boolean // current player asked the TV to spin
+  searchOpen: boolean // the TV is browsing results / watching a video
   roundWonBy: string | null // player id of this round's first bingo
   marks: MarkEvent[]
   version: number

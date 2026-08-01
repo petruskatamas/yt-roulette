@@ -79,6 +79,8 @@ export const es: Messages = {
     failed: 'No se han podido obtener los resultados — ábrelos en el navegador.',
     openInBrowser: 'Abrir en el navegador ↗',
     playerTitle: 'Reproductor de YouTube',
+    random: 'Al azar',
+    rolling: 'Sorteando…',
   },
 
   watch: {
@@ -113,6 +115,7 @@ export const es: Messages = {
     otherTurn: (name: string) => `${name} está girando`,
     spin: '¡GIRA!',
     spinning: 'GIRANDO…',
+    tvBusy: 'viendo un vídeo…',
     bingoBanner: (name: string) => `BINGO — ¡${name}!`,
     youWon: 'Tienes BINGO — ¡grítalo!',
     markedHint: (n: number) => `${n}/24 marcadas · toca una casilla cuando la veas`,

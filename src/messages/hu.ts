@@ -76,6 +76,8 @@ export const hu: Messages = {
     failed: 'Nem sikerült lekérni a találatokat — nyisd meg böngészőben.',
     openInBrowser: 'Megnyitás böngészőben ↗',
     playerTitle: 'YouTube lejátszó',
+    random: 'Véletlen',
+    rolling: 'Sorsolás…',
   },
 
   watch: {
@@ -110,6 +112,7 @@ export const hu: Messages = {
     otherTurn: (name: string) => `${name} pörget`,
     spin: 'PÖRGESS!',
     spinning: 'PÖRÖG…',
+    tvBusy: 'videót néznek…',
     bingoBanner: (name: string) => `BINGÓ — ${name}!`,
     youWon: 'BINGÓD van — kiálts!',
     markedHint: (n: number) => `${n}/24 jelölve · koppints a kockára, ha kiszúrtad`,

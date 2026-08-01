@@ -412,6 +412,43 @@ button {
   border-color: var(--border);
 }
 
+/* random pick: rolling highlight, then the landing flash */
+
+.roll-btn.is-rolling {
+  animation: roll-shake 0.35s ease-in-out infinite;
+}
+
+@keyframes roll-shake {
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
+}
+
+.search-list.is-rolling .yt-row {
+  opacity: 0.45;
+  transition: opacity 0.1s;
+}
+
+.search-list.is-rolling .yt-row.is-highlighted {
+  opacity: 1;
+  background: var(--bg-raised);
+  border-color: var(--gold);
+  transform: scale(1.02);
+  box-shadow: 0 0 18px rgba(212, 175, 55, 0.35);
+}
+
+.yt-row.is-picked {
+  border-color: var(--green-bright);
+  background: rgba(53, 209, 137, 0.1);
+  animation: pick-flash 0.45s ease 2;
+}
+
+@keyframes pick-flash {
+  50% {
+    box-shadow: 0 0 34px rgba(53, 209, 137, 0.75);
+    transform: scale(1.03);
+  }
+}
+
 .yt-thumb {
   position: relative;
   flex-shrink: 0;
@@ -515,6 +552,7 @@ button {
   border-radius: 14px;
   background: #000;
 }
+
 
 .watch-title {
   margin: 0;

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { openOnTv, useGame, useJoinBase, useWakeLock } from '@/lib/gameClient'
 import { SEGMENTS, ytUrl } from '../data/patterns'
 import { bestLineProgress, hasBingo } from '../data/challenges'
-import { fanfare, initSoundUnlock, markTick } from '../lib/sound'
+import { fanfare, initSoundUnlock, land, markTick, wheelTicks } from '../lib/sound'
 import { fmtDate, fmtRelative, fmtViews, localeOptions, messages } from '../lib/i18n'
 import type { Messages } from '../lib/i18n'
 import type { GamePlayer, Segment, Spin, YtChannel, YtResult, YtVideoDetails } from '../types'
@@ -133,9 +133,66 @@ export function HostView() {
     }
   }, [searchOpen, query, sort])
 
+  const [rollingIdx, setRollingIdx] = useState<number | null>(null)
+  const [pickedIdx, setPickedIdx] = useState<number | null>(null)
+  const rollTimers = useRef<number[]>([])
+
+  const stopRoll = () => {
+    rollTimers.current.forEach(clearTimeout)
+    rollTimers.current = []
+    setRollingIdx(null)
+    setPickedIdx(null)
+  }
+  useEffect(() => stopRoll, [])
+
+  const ROLL_S = 2.2
+  const randomPick = () => {
+    if (!results?.length || rollingIdx !== null) return
+    const target = Math.floor(Math.random() * results.length)
+    const show = (i: number) => {
+      setRollingIdx(i)
+      document.querySelector(`[data-row="${i}"]`)?.scrollIntoView({ block: 'nearest' })
+    }
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setPlaying(results[target])
+      return
+    }
+    // same ease-out curve as the wheel, so ticks and highlight decelerate together
+    const steps = Math.min(26, Math.max(12, results.length * 2))
+    wheelTicks(ROLL_S, steps)
+    const timers = [...Array(steps)].map((_, k) => {
+      const i = k + 1
+      const at = (1 - Math.cbrt(1 - i / steps)) * ROLL_S * 1000
+      const idx = i === steps ? target : Math.floor(Math.random() * results.length)
+      return window.setTimeout(() => show(idx), at)
+    })
+    timers.push(
+      window.setTimeout(() => {
+        land()
+        setRollingIdx(null)
+        setPickedIdx(target)
+      }, ROLL_S * 1000 + 40),
+      window.setTimeout(() => {
+        setPickedIdx(null)
+        setPlaying(results[target])
+      }, ROLL_S * 1000 + 950),
+    )
+    rollTimers.current = timers
+  }
+
+  // publish whether the TV is busy so phones can't spin mid-video;
+  // comparing against the server value also self-heals after a host reload
+  const serverSearchOpen = state?.searchOpen
+  useEffect(() => {
+    if (serverSearchOpen !== undefined && serverSearchOpen !== searchOpen) {
+      post('/searching', { open: searchOpen })
+    }
+  }, [searchOpen, serverSearchOpen, post])
+
   const roundOver = !!state?.roundWonBy
   useEffect(() => {
     if (roundOver) {
+      stopRoll()
       setSearchOpen(false)
       setPlaying(null)
     }
@@ -392,6 +449,15 @@ export function HostView() {
               <button className="btn" onClick={() => setPlaying(null)}>{t.search.results}</button>
             )}
             <span className="search-query">{lastSpin.query}</span>
+            {!playing && !!results?.length && (
+              <button
+                className={`btn btn-primary roll-btn ${rollingIdx !== null ? 'is-rolling' : ''}`}
+                onClick={randomPick}
+                disabled={rollingIdx !== null}
+              >
+                🎲 {rollingIdx !== null ? t.search.rolling : t.search.random}
+              </button>
+            )}
             <button
               className="btn btn-ghost"
               onClick={() =>
@@ -510,9 +576,18 @@ export function HostView() {
           ) : results.length === 0 ? (
             <p className="hint search-empty">{t.search.noResults}</p>
           ) : (
-            <div className="search-list">
-              {results.map((r) => (
-                <button key={r.id} className="yt-row" onClick={() => setPlaying(r)}>
+            <div className={`search-list ${rollingIdx !== null ? 'is-rolling' : ''}`}>
+              {results.map((r, i) => (
+                <button
+                  key={r.id}
+                  data-row={i}
+                  className={[
+                    'yt-row',
+                    rollingIdx === i ? 'is-highlighted' : '',
+                    pickedIdx === i ? 'is-picked' : '',
+                  ].join(' ')}
+                  onClick={() => setPlaying(r)}
+                >
                   <span className="yt-thumb">
                     <img src={r.thumb} alt="" loading="lazy" />
                     {r.duration && <span className="yt-duration">{r.duration}</span>}

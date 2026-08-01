@@ -330,10 +330,14 @@ export function PlayerView({ playerId }: { playerId: string }) {
       {state.phase === 'play' && myTurn && (
         <button
           className="btn btn-primary spin-remote"
-          disabled={state.spinRequested}
+          disabled={state.spinRequested || state.searchOpen}
           onClick={() => post('/spin/request', { playerId })}
         >
-          {state.spinRequested ? t.player.spinning : t.player.spin}
+          {state.searchOpen
+            ? t.player.tvBusy
+            : state.spinRequested
+              ? t.player.spinning
+              : t.player.spin}
         </button>
       )}
 

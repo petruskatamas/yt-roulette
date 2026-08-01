@@ -14,6 +14,7 @@ export async function POST(req: Request) {
   state.celebration = null
   state.roundWonBy = null
   state.spinRequested = false
+  state.searchOpen = false
   state.marks = []
   bump()
   return ok()

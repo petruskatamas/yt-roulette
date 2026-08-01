@@ -7,6 +7,7 @@ export async function POST(req: Request) {
   if (state.phase !== 'play' || !current || current.id !== body.playerId) {
     return bad(400, 'not your turn')
   }
+  if (state.searchOpen) return bad(409, 'tv is busy')
   if (!state.spinRequested) {
     state.spinRequested = true
     bump()

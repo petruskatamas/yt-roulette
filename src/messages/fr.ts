@@ -79,6 +79,8 @@ export const fr: Messages = {
     failed: 'Impossible de récupérer les résultats — ouvre-les dans le navigateur.',
     openInBrowser: 'Ouvrir dans le navigateur ↗',
     playerTitle: 'Lecteur YouTube',
+    random: 'Au hasard',
+    rolling: 'Tirage…',
   },
 
   watch: {
@@ -113,6 +115,7 @@ export const fr: Messages = {
     otherTurn: (name: string) => `${name} lance la roue`,
     spin: 'LANCE !',
     spinning: 'ÇA TOURNE…',
+    tvBusy: 'vidéo en cours…',
     bingoBanner: (name: string) => `BINGO — ${name} !`,
     youWon: 'Tu as BINGO — crie-le !',
     markedHint: (n: number) => `${n}/24 cochées · touche une case quand tu la repères`,

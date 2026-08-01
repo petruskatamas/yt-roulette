@@ -74,6 +74,8 @@ export const en = {
     failed: 'Couldn’t fetch the results — open it in the browser.',
     openInBrowser: 'Open in browser ↗',
     playerTitle: 'YouTube player',
+    random: 'Random pick',
+    rolling: 'Rolling…',
   },
 
   watch: {
@@ -108,6 +110,7 @@ export const en = {
     otherTurn: (name: string) => `${name} is spinning`,
     spin: 'SPIN!',
     spinning: 'SPINNING…',
+    tvBusy: 'watching a video…',
     bingoBanner: (name: string) => `BINGO — ${name}!`,
     youWon: 'You have BINGO — shout it!',
     markedHint: (n: number) => `${n}/24 marked · tap a square when you spot it`,

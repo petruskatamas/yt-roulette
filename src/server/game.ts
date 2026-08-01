@@ -21,6 +21,7 @@ export function blankState(): GameState {
     lastSpin: null,
     celebration: null,
     spinRequested: false,
+    searchOpen: false,
     roundWonBy: null,
     marks: [],
     version: 1,
@@ -33,6 +34,7 @@ function loadState(): GameState {
     if (!Array.isArray(s.players) || typeof s.version !== 'number') return blankState()
     s.locale ??= 'en'
     s.spinRequested ??= false
+    s.searchOpen ??= false
     s.roundWonBy ??= null
     if (!Array.isArray(s.marks)) s.marks = []
     s.marks.forEach((m) => { m.color ??= '#35d189' })
