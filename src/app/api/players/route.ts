@@ -1,4 +1,5 @@
-import { PLAYER_COLORS, bad, bump, getState, readBody, uid } from '@/server/game'
+import { PLAYER_COLORS, bump, getState, uid } from '@/server/state'
+import { bad, json, readBody } from '@/server/http'
 
 export async function POST(req: Request) {
   const body = await readBody(req)
@@ -11,8 +12,9 @@ export async function POST(req: Request) {
     color: PLAYER_COLORS[state.players.length % PLAYER_COLORS.length],
     wins: 0,
     cells: null,
+    draft: null,
   }
   state.players.push(player)
   bump()
-  return Response.json({ id: player.id })
+  return json({ id: player.id })
 }

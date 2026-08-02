@@ -1,8 +1,8 @@
 import {
   ri, pad, pick, hexChar, randDate, today, compact, spaced,
   monthDayY, monthDDY, MONTHS,
-} from '../lib/rand'
-import type { Gen, SegDef, Segment, SortMode } from '../types'
+} from '@/lib/rand'
+import type { Gen, SegDef, Segment, SortMode } from '@/types'
 
 export const ytUrl = (query: string, sort: SortMode) =>
   `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}${

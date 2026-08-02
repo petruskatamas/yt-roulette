@@ -1,4 +1,4 @@
-import { bad } from '@/server/game'
+import { bad, json } from '@/server/http'
 import { collect, fetchInitialData, parseCount, parseDate } from '@/server/yt'
 import type { YtVideoDetails } from '@/types'
 
@@ -13,7 +13,7 @@ export async function GET(req: Request) {
   if (!/^[\w-]{11}$/.test(id)) return bad(400, 'bad video id')
 
   const data = await fetchInitialData(`https://www.youtube.com/watch?v=${id}`)
-  if (!data) return Response.json({ error: 'fetch-failed' }, { status: 502 })
+  if (!data) return bad(502, 'fetch-failed')
 
   const likeTitle =
     collect<ButtonViewModel>(data, 'buttonViewModel').find((b) => b.iconName === 'LIKE')?.title ?? ''
@@ -38,5 +38,5 @@ export async function GET(req: Request) {
       collect<{ content?: string }>(data, 'attributedDescription')[0]?.content ?? ''
     ).slice(0, 600),
   }
-  return Response.json({ details })
+  return json({ details })
 }

@@ -1,4 +1,4 @@
-import type { RelTime } from '../types'
+import type { RelTime } from '@/types'
 
 // YouTube is always asked in en-US so there is exactly one language to parse;
 // clients localize the structured numbers/dates we return.
@@ -26,7 +26,7 @@ export async function fetchInitialData(url: URL | string): Promise<unknown | nul
   }
 }
 
-/** Depth-first collect of every value stored under `key`, wherever it is nested. */
+// Depth-first collect of every value stored under `key`, wherever it is nested.
 export function collect<T>(node: unknown, key: string, out: T[] = []): T[] {
   if (Array.isArray(node)) {
     for (const item of node) collect(item, key, out)
@@ -41,10 +41,8 @@ export function collect<T>(node: unknown, key: string, out: T[] = []): T[] {
 
 const SUFFIX: Record<string, number> = { K: 1e3, M: 1e6, B: 1e9 }
 
-/**
- * en-US counts: "1,234" exact, "1.2K"/"19M" abbreviated, "No views" zero.
- * Returns null when the number is absent or hidden.
- */
+// en-US counts: "1,234" exact, "1.2K"/"19M" abbreviated, "No views" zero.
+// Returns null when the number is absent or hidden.
 export function parseCount(text: string): { value: number | null; approx: boolean; text: string } {
   const raw = (text ?? '').trim()
   if (!raw) return { value: null, approx: false, text: '' }
@@ -74,7 +72,7 @@ const UNITS: RelTime extends { unit: infer U } | null ? Record<string, U> : neve
   year: 'year', years: 'year',
 }
 
-/** "13 years ago" / "Streamed 2 months ago" → {value: 13, unit: 'year'} */
+// "13 years ago" / "Streamed 2 months ago" → {value: 13, unit: 'year'}
 export function parseRelative(text: string): RelTime {
   const m = /(\d+)\s+(second|minute|hour|day|week|month|year)s?\s+ago/i.exec(text ?? '')
   if (!m) return null
@@ -82,7 +80,7 @@ export function parseRelative(text: string): RelTime {
   return unit ? { value: Number(m[1]), unit } : null
 }
 
-/** "Premiered Jan 4, 2013" / "Jan 4, 2013" → "2013-01-04" */
+// "Premiered Jan 4, 2013" / "Jan 4, 2013" → "2013-01-04"
 export function parseDate(text: string): string {
   const m = /([A-Z][a-z]{2})\s+(\d{1,2}),\s*(\d{4})/.exec(text ?? '')
   if (!m) return ''

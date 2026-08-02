@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { GameState } from '../types'
+import type { GameState } from '@/types'
 
 export function useGame(intervalMs = 1000) {
   const [state, setState] = useState<GameState | null>(null)
@@ -35,7 +35,7 @@ export function useGame(intervalMs = 1000) {
           body: body === undefined ? undefined : JSON.stringify(body),
         })
       } catch {
-        /* next poll will resync */
+        // next poll will resync
       }
       await refresh(true)
     },

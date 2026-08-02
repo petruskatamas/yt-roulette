@@ -59,12 +59,16 @@ export const en = {
     newGameLabel: 'New game',
     redealText: 'New round with new cards — everyone rewrites theirs on their phone. Go?',
     redealLabel: 'New cards',
+    rewriteText: 'Everyone goes back to the editor with their current card and can rewrite or rearrange it. Go?',
+    rewriteLabel: 'Rewrite',
   },
 
   celebration: {
     title: 'B I N G O !',
     keepCards: 'New round (keep cards)',
     newCards: 'New round with new cards',
+    shuffleCards: 'New round (swap cards around)',
+    rewriteCards: 'New round (rewrite cards)',
   },
 
   search: {
@@ -74,6 +78,8 @@ export const en = {
     failed: 'Couldn’t fetch the results — open it in the browser.',
     openInBrowser: 'Open in browser ↗',
     playerTitle: 'YouTube player',
+    random: 'Random pick',
+    rolling: 'Rolling…',
   },
 
   watch: {
@@ -108,10 +114,28 @@ export const en = {
     otherTurn: (name: string) => `${name} is spinning`,
     spin: 'SPIN!',
     spinning: 'SPINNING…',
+    tvBusy: 'watching a video…',
     bingoBanner: (name: string) => `BINGO — ${name}!`,
     youWon: 'You have BINGO — shout it!',
-    markedHint: (n: number) => `${n}/24 marked · tap a square when you spot it`,
     reconnecting: 'reconnecting…',
+  },
+
+  vote: {
+    mode: 'Community vote',
+    modeHint: 'marks must be approved by the room',
+    reviewTitle: 'Claim review',
+    claims: (n: number) => `${n} ${n === 1 ? 'claim' : 'claims'} to judge`,
+    claimedBy: (name: string) => `${name} claims`,
+    seenIn: (title: string) => `in “${title}”`,
+    waitingFor: (n: number) => `waiting for ${n} ${n === 1 ? 'vote' : 'votes'}`,
+    decideNow: 'Decide now',
+    accepted: 'ACCEPTED',
+    rejected: 'REJECTED',
+    valid: 'Valid',
+    invalid: 'Nope',
+    yourClaim: 'The room is judging your claim…',
+    voted: 'Vote cast — waiting for the others…',
+    spinBlocked: 'votes pending…',
   },
 
   card: {

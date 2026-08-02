@@ -1,4 +1,4 @@
-import type { Messages } from '../lib/i18n'
+import type { Messages } from '@/lib/i18n'
 
 const nf = new Intl.NumberFormat('hu-HU')
 
@@ -61,12 +61,16 @@ export const hu: Messages = {
     newGameLabel: 'Új játék',
     redealText: 'Új kör új kártyákkal — mindenki újraírja a sajátját a telefonján. Mehet?',
     redealLabel: 'Új kártyák',
+    rewriteText: 'Mindenki visszakerül a szerkesztőbe a jelenlegi kártyájával, és átírhatja vagy átrendezheti. Mehet?',
+    rewriteLabel: 'Átírás',
   },
 
   celebration: {
     title: 'B I N G Ó !',
     keepCards: 'Új kör (kártyák maradnak)',
     newCards: 'Új kör új kártyákkal',
+    shuffleCards: 'Új kör (kártyacsere)',
+    rewriteCards: 'Új kör (kártyák átírása)',
   },
 
   search: {
@@ -76,6 +80,8 @@ export const hu: Messages = {
     failed: 'Nem sikerült lekérni a találatokat — nyisd meg böngészőben.',
     openInBrowser: 'Megnyitás böngészőben ↗',
     playerTitle: 'YouTube lejátszó',
+    random: 'Véletlen',
+    rolling: 'Sorsolás…',
   },
 
   watch: {
@@ -110,10 +116,28 @@ export const hu: Messages = {
     otherTurn: (name: string) => `${name} pörget`,
     spin: 'PÖRGESS!',
     spinning: 'PÖRÖG…',
+    tvBusy: 'videót néznek…',
     bingoBanner: (name: string) => `BINGÓ — ${name}!`,
     youWon: 'BINGÓD van — kiálts!',
-    markedHint: (n: number) => `${n}/24 jelölve · koppints a kockára, ha kiszúrtad`,
     reconnecting: 'újracsatlakozás…',
+  },
+
+  vote: {
+    mode: 'Közösségi szavazás',
+    modeHint: 'a jelöléseket a társaságnak jóvá kell hagynia',
+    reviewTitle: 'Jelölések elbírálása',
+    claims: (n: number) => `${n} jelölés vár döntésre`,
+    claimedBy: (name: string) => `${name} jelölte`,
+    seenIn: (title: string) => `ebben: „${title}”`,
+    waitingFor: (n: number) => `${n} szavazat hiányzik`,
+    decideNow: 'Döntsünk most',
+    accepted: 'ELFOGADVA',
+    rejected: 'ELUTASÍTVA',
+    valid: 'Ér',
+    invalid: 'Nem ér',
+    yourClaim: 'A társaság épp a jelölésedről dönt…',
+    voted: 'Szavaztál — várunk a többiekre…',
+    spinBlocked: 'szavazás van folyamatban…',
   },
 
   card: {

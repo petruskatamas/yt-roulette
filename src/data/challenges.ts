@@ -1,4 +1,4 @@
-import type { Cell, Locale } from '../types'
+import type { Cell, Locale } from '@/types'
 import { en } from './challenges/en'
 import { es } from './challenges/es'
 import { fr } from './challenges/fr'
@@ -6,7 +6,7 @@ import { hu } from './challenges/hu'
 
 const LISTS: Record<Locale, string[]> = { en, es, fr, hu }
 
-/** Suggestions offered while writing a card; not the card itself. */
+// Suggestions offered while writing a card; not the card itself.
 export const challengesFor = (locale: Locale | undefined): string[] => LISTS[locale ?? 'en'] ?? en
 
 const LINES: number[][] = [
@@ -20,7 +20,7 @@ const LINES: number[][] = [
   [0, 6, 12, 18, 24], [4, 8, 12, 16, 20],
 ]
 
-/** Indices of every cell that is part of a completed line */
+// Indices of every cell that is part of a completed line
 export function winningCells(cells: Cell[]): Set<number> {
   const won = new Set<number>()
   for (const line of LINES) {
@@ -31,7 +31,7 @@ export function winningCells(cells: Cell[]): Set<number> {
 
 export const hasBingo = (cells: Cell[]) => winningCells(cells).size > 0
 
-/** Marked-cell count of the player's most complete line (0–5) */
+// Marked-cell count of the player's most complete line (0–5)
 export function bestLineProgress(cells: Cell[]): number {
   let best = 0
   for (const line of LINES) {

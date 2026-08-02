@@ -66,7 +66,7 @@ Two files and three one-line registrations.
    and change the header:
 
    ```ts
-   import type { Messages } from '../lib/i18n'
+   import type { Messages } from '@/lib/i18n'
 
    const nf = new Intl.NumberFormat('fr-FR')
 
@@ -119,13 +119,20 @@ Notes:
 
 The project has no formatter config; match the surrounding code:
 
-- 2-space indent, no semicolons, single quotes.
+- 2-space indent, no semicolons, single quotes, `//` line comments (no `/* */`).
 - Comments only for things the code can't say — invariants, non-obvious math,
   why an error is swallowed. No comments that restate the line below them.
 - Shared types live in `src/types.ts`, which imports nothing.
+- Cross-directory imports use the `@/` alias; only same-folder imports are relative.
 - Keep the client/server boundary: `src/server/*` uses Node APIs and is imported
   only by API routes; `src/lib/gameClient.ts` is browser-only. Pure logic that
   both sides need (e.g. `hasBingo`) belongs in `src/data/`.
+- `src/server` is split by concern — `state.ts` (persistence + the live game),
+  `rules.ts` (marks, claims, cards), `http.ts` (`ok`/`bad`/`json`/`readBody`),
+  `host.ts` (LAN address, launching the browser), `yt.ts` (scraping). Routes stay
+  thin: validate, mutate, `bump()`, respond.
+- Views orchestrate; components render. If a view grows its own markup blocks,
+  pull them into `src/components/`.
 - API routes return locale-neutral data — numbers and ISO dates, never
   pre-formatted display strings.
 

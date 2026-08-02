@@ -1,4 +1,4 @@
-import type { Messages } from '../lib/i18n'
+import type { Messages } from '@/lib/i18n'
 
 const nf = new Intl.NumberFormat('fr-FR')
 
@@ -64,12 +64,16 @@ export const fr: Messages = {
     redealText:
       'Nouvelle manche avec de nouvelles cartes — chacun réécrit la sienne sur son téléphone. On y va ?',
     redealLabel: 'Nouvelles cartes',
+    rewriteText: 'Chacun retourne à l’éditeur avec sa carte actuelle et peut la réécrire ou la réorganiser. On y va ?',
+    rewriteLabel: 'Réécrire',
   },
 
   celebration: {
     title: 'B I N G O !',
     keepCards: 'Nouvelle manche (garder les cartes)',
     newCards: 'Nouvelle manche, nouvelles cartes',
+    shuffleCards: 'Nouvelle manche (échanger les cartes)',
+    rewriteCards: 'Nouvelle manche (réécrire les cartes)',
   },
 
   search: {
@@ -79,6 +83,8 @@ export const fr: Messages = {
     failed: 'Impossible de récupérer les résultats — ouvre-les dans le navigateur.',
     openInBrowser: 'Ouvrir dans le navigateur ↗',
     playerTitle: 'Lecteur YouTube',
+    random: 'Au hasard',
+    rolling: 'Tirage…',
   },
 
   watch: {
@@ -113,10 +119,28 @@ export const fr: Messages = {
     otherTurn: (name: string) => `${name} lance la roue`,
     spin: 'LANCE !',
     spinning: 'ÇA TOURNE…',
+    tvBusy: 'vidéo en cours…',
     bingoBanner: (name: string) => `BINGO — ${name} !`,
     youWon: 'Tu as BINGO — crie-le !',
-    markedHint: (n: number) => `${n}/24 cochées · touche une case quand tu la repères`,
     reconnecting: 'reconnexion…',
+  },
+
+  vote: {
+    mode: 'Vote collectif',
+    modeHint: 'les cases doivent être validées par le groupe',
+    reviewTitle: 'Validation des cases',
+    claims: (n: number) => `${n} ${n === 1 ? 'case à juger' : 'cases à juger'}`,
+    claimedBy: (name: string) => `${name} revendique`,
+    seenIn: (title: string) => `dans « ${title} »`,
+    waitingFor: (n: number) => `${n} ${n === 1 ? 'vote manquant' : 'votes manquants'}`,
+    decideNow: 'Décider maintenant',
+    accepted: 'VALIDÉ',
+    rejected: 'REFUSÉ',
+    valid: 'Valable',
+    invalid: 'Non',
+    yourClaim: 'Le groupe juge ta case…',
+    voted: 'Vote enregistré — on attend les autres…',
+    spinBlocked: 'vote en cours…',
   },
 
   card: {

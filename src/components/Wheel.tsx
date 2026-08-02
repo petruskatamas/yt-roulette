@@ -1,7 +1,7 @@
 import { useImperativeHandle, useRef, useState } from 'react'
 import type { Ref } from 'react'
-import type { Segment } from '../types'
-import { land, wheelTicks, whoosh } from '../lib/sound'
+import type { Segment } from '@/types'
+import { land, wheelTicks, whoosh } from '@/lib/sound'
 
 export type WheelHandle = { spin: () => void }
 

@@ -1,4 +1,4 @@
-import { bad } from '@/server/game'
+import { bad, json } from '@/server/http'
 import { collect, fetchInitialData, parseCount } from '@/server/yt'
 import type { YtChannel } from '@/types'
 
@@ -18,7 +18,7 @@ export async function GET(req: Request) {
   if (!/^UC[\w-]{20,}$/.test(id)) return bad(400, 'bad channel id')
 
   const data = await fetchInitialData(`https://www.youtube.com/channel/${id}`)
-  if (!data) return Response.json({ error: 'fetch-failed' }, { status: 502 })
+  if (!data) return bad(502, 'fetch-failed')
 
   const meta = collect<ChannelMetadata>(data, 'channelMetadataRenderer')[0] ?? {}
   const parts = collect<ContentMetadata>(data, 'contentMetadataViewModel')
@@ -41,5 +41,5 @@ export async function GET(req: Request) {
     videoCount: videos.value,
     description: (meta.description ?? '').slice(0, 400),
   }
-  return Response.json({ channel })
+  return json({ channel })
 }

@@ -115,6 +115,40 @@ export function markTick() {
   blip(c.currentTime, 1400, 0.06, 0.05, 'triangle')
 }
 
+// each vote lands a semitone higher, so a filling tally sounds like it's stacking
+export function voteBlip(n = 0, valid = true) {
+  const c = ac()
+  if (!c || c.state !== 'running') return
+  const base = valid ? 620 : 380
+  blip(c.currentTime, base * Math.pow(1.12, Math.min(n, 6)), 0.09, 0.08, 'triangle')
+}
+
+export function accept() {
+  const c = ac()
+  if (!c || c.state !== 'running') return
+  const t = c.currentTime
+  blip(t, 783.99, 0.22, 0.11, 'triangle')
+  blip(t + 0.09, 1046.5, 0.28, 0.11, 'triangle')
+  blip(t + 0.19, 1318.5, 0.55, 0.1, 'triangle')
+  blip(t + 0.19, 1322.8, 0.55, 0.06, 'triangle')
+}
+
+export function reject() {
+  const c = ac()
+  if (!c || c.state !== 'running') return
+  const t = c.currentTime
+  const osc = c.createOscillator()
+  const g = c.createGain()
+  osc.type = 'sawtooth'
+  osc.frequency.setValueAtTime(320, t)
+  osc.frequency.exponentialRampToValueAtTime(105, t + 0.42)
+  g.gain.setValueAtTime(0.11, t)
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5)
+  osc.connect(g).connect(c.destination)
+  osc.start(t)
+  osc.stop(t + 0.5)
+}
+
 export function buzz(pattern: number | number[]) {
   if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate(pattern)
 }

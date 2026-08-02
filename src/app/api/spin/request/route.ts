@@ -1,4 +1,5 @@
-import { bad, bump, getState, ok, readBody } from '@/server/game'
+import { bump, getState } from '@/server/state'
+import { bad, ok, readBody } from '@/server/http'
 
 export async function POST(req: Request) {
   const body = await readBody(req)
@@ -7,6 +8,8 @@ export async function POST(req: Request) {
   if (state.phase !== 'play' || !current || current.id !== body.playerId) {
     return bad(400, 'not your turn')
   }
+  if (state.searchOpen) return bad(409, 'tv is busy')
+  if (state.claims.length) return bad(409, 'claims pending')
   if (!state.spinRequested) {
     state.spinRequested = true
     bump()

@@ -1,4 +1,5 @@
-import { bad, ok, openIncognito, readBody } from '@/server/game'
+import { bad, ok, readBody } from '@/server/http'
+import { openIncognito } from '@/server/host'
 
 export async function POST(req: Request) {
   const body = await readBody(req)
