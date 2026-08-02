@@ -61,12 +61,16 @@ export const hu: Messages = {
     newGameLabel: 'Új játék',
     redealText: 'Új kör új kártyákkal — mindenki újraírja a sajátját a telefonján. Mehet?',
     redealLabel: 'Új kártyák',
+    rewriteText: 'Mindenki visszakerül a szerkesztőbe a jelenlegi kártyájával, és átírhatja vagy átrendezheti. Mehet?',
+    rewriteLabel: 'Átírás',
   },
 
   celebration: {
     title: 'B I N G Ó !',
     keepCards: 'Új kör (kártyák maradnak)',
     newCards: 'Új kör új kártyákkal',
+    shuffleCards: 'Új kör (kártyacsere)',
+    rewriteCards: 'Új kör (kártyák átírása)',
   },
 
   search: {

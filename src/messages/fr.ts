@@ -64,12 +64,16 @@ export const fr: Messages = {
     redealText:
       'Nouvelle manche avec de nouvelles cartes — chacun réécrit la sienne sur son téléphone. On y va ?',
     redealLabel: 'Nouvelles cartes',
+    rewriteText: 'Chacun retourne à l’éditeur avec sa carte actuelle et peut la réécrire ou la réorganiser. On y va ?',
+    rewriteLabel: 'Réécrire',
   },
 
   celebration: {
     title: 'B I N G O !',
     keepCards: 'Nouvelle manche (garder les cartes)',
     newCards: 'Nouvelle manche, nouvelles cartes',
+    shuffleCards: 'Nouvelle manche (échanger les cartes)',
+    rewriteCards: 'Nouvelle manche (réécrire les cartes)',
   },
 
   search: {

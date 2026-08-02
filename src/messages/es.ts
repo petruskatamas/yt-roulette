@@ -64,12 +64,16 @@ export const es: Messages = {
     redealText:
       'Ronda nueva con cartones nuevos — cada uno reescribe el suyo en el móvil. ¿Vamos?',
     redealLabel: 'Cartones nuevos',
+    rewriteText: 'Todos vuelven al editor con su cartón actual y pueden reescribirlo o reordenarlo. ¿Vamos?',
+    rewriteLabel: 'Reescribir',
   },
 
   celebration: {
     title: 'B I N G O !',
     keepCards: 'Ronda nueva (mantener cartones)',
     newCards: 'Ronda nueva con cartones nuevos',
+    shuffleCards: 'Ronda nueva (intercambiar cartones)',
+    rewriteCards: 'Ronda nueva (reescribir cartones)',
   },
 
   search: {

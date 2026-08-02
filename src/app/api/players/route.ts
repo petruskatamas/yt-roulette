@@ -11,6 +11,7 @@ export async function POST(req: Request) {
     color: PLAYER_COLORS[state.players.length % PLAYER_COLORS.length],
     wins: 0,
     cells: null,
+    draft: null,
   }
   state.players.push(player)
   bump()

@@ -59,12 +59,16 @@ export const en = {
     newGameLabel: 'New game',
     redealText: 'New round with new cards — everyone rewrites theirs on their phone. Go?',
     redealLabel: 'New cards',
+    rewriteText: 'Everyone goes back to the editor with their current card and can rewrite or rearrange it. Go?',
+    rewriteLabel: 'Rewrite',
   },
 
   celebration: {
     title: 'B I N G O !',
     keepCards: 'New round (keep cards)',
     newCards: 'New round with new cards',
+    shuffleCards: 'New round (swap cards around)',
+    rewriteCards: 'New round (rewrite cards)',
   },
 
   search: {

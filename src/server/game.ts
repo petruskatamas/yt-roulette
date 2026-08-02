@@ -3,7 +3,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { networkInterfaces } from 'node:os'
 import { join } from 'node:path'
 import { hasBingo } from '../data/challenges'
-import type { GamePlayer, GameState } from '../types'
+import type { Cell, GamePlayer, GameState } from '../types'
 
 const DATA_DIR = join(process.cwd(), '.game')
 const DATA_FILE = join(DATA_DIR, 'state.json')
@@ -52,6 +52,7 @@ function loadState(): GameState {
     delete (s as GameState & { history?: unknown }).history
     s.players.forEach((p, i) => {
       p.wins ??= 0
+      p.draft ??= null
       p.color ??= PLAYER_COLORS[i % PLAYER_COLORS.length]
     })
     return s
@@ -182,3 +183,22 @@ export function resolveClaim(state: GameState, claimId: string, force = false): 
   }
   return true
 }
+
+/** The 24 written squares of a card, in order, without the free centre. */
+export const cardTexts = (cells: Cell[]) => cells.filter((c) => !c.free).map((c) => c.text)
+
+export function buildCard(texts: string[]): Cell[] {
+  const cells: Cell[] = texts.map((text) => ({ text: text.slice(0, 60), marked: false }))
+  cells.splice(12, 0, { text: 'FREE', marked: true, free: true })
+  return cells
+}
+
+export function shuffled<T>(list: T[]): T[] {
+  const out = [...list]
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[out[i], out[j]] = [out[j], out[i]]
+  }
+  return out
+}
+

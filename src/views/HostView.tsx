@@ -783,11 +783,23 @@ export function HostView() {
               </div>
             )}
             <div className="celebration-actions">
-              <button
-                className="btn btn-primary"
-                onClick={() => post('/round', { redeal: false })}
-              >
+              <button className="btn btn-primary" onClick={() => post('/round', { mode: 'keep' })}>
                 {t.celebration.keepCards}
+              </button>
+              <button className="btn" onClick={() => post('/round', { mode: 'shuffle' })}>
+                {t.celebration.shuffleCards}
+              </button>
+              <button
+                className="btn"
+                onClick={() =>
+                  setConfirmBox({
+                    text: t.confirm.rewriteText,
+                    label: t.confirm.rewriteLabel,
+                    action: () => post('/round', { mode: 'rewrite' }),
+                  })
+                }
+              >
+                {t.celebration.rewriteCards}
               </button>
               <button
                 className="btn"
@@ -795,7 +807,7 @@ export function HostView() {
                   setConfirmBox({
                     text: t.confirm.redealText,
                     label: t.confirm.redealLabel,
-                    action: () => post('/round', { redeal: true }),
+                    action: () => post('/round', { mode: 'new' }),
                   })
                 }
               >

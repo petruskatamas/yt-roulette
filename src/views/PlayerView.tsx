@@ -81,7 +81,9 @@ function CardBuilder({
   t: Messages
   onSubmit: (texts: string[]) => void
 }) {
-  const [texts, setTexts] = useState<string[]>(() => loadDraft(player.id))
+  const [texts, setTexts] = useState<string[]>(
+    () => (player.draft?.length === 24 ? player.draft : loadDraft(player.id)),
+  )
   const [editing, setEditing] = useState<number | null>(null)
   const [draft, setDraft] = useState('')
   const [activeId, setActiveId] = useState<number | null>(null)

@@ -78,6 +78,7 @@ export type GamePlayer = {
   color: string
   wins: number
   cells: Cell[] | null // null until the player submits their card
+  draft: string[] | null // texts pushed back to the editor for a rewrite
 }
 
 export type Claim = {
