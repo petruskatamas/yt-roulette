@@ -1,4 +1,5 @@
-import { bad, bump, getState, ok, readBody } from '@/server/game'
+import { bump, getState } from '@/server/state'
+import { bad, ok, readBody } from '@/server/http'
 import type { Spin } from '@/types'
 
 export async function POST(req: Request) {

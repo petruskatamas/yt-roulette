@@ -1,4 +1,6 @@
-import { bump, getState, ok, readBody, resolveClaim } from '@/server/game'
+import { bump, getState } from '@/server/state'
+import { ok, readBody } from '@/server/http'
+import { resolveClaim } from '@/server/rules'
 
 export async function POST(req: Request) {
   const body = await readBody(req)

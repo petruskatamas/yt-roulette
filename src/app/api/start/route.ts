@@ -1,4 +1,5 @@
-import { bad, bump, getState, ok } from '@/server/game'
+import { bump, getState } from '@/server/state'
+import { bad, ok } from '@/server/http'
 
 export async function POST() {
   const state = getState()

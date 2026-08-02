@@ -1,4 +1,4 @@
-import type { Messages } from '../lib/i18n'
+import type { Messages } from '@/lib/i18n'
 
 const nf = new Intl.NumberFormat('fr-FR')
 

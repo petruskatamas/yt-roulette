@@ -1,4 +1,5 @@
-import { blankState, getState, ok, setState } from '@/server/game'
+import { blankState, getState, setState } from '@/server/state'
+import { ok } from '@/server/http'
 
 export async function POST() {
   const prev = getState()

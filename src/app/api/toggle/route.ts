@@ -1,4 +1,6 @@
-import { applyMark, bad, bump, getState, ok, readBody, resolveClaim, uid } from '@/server/game'
+import { bump, getState, uid } from '@/server/state'
+import { bad, ok, readBody } from '@/server/http'
+import { applyMark, resolveClaim } from '@/server/rules'
 
 export async function POST(req: Request) {
   const body = await readBody(req)

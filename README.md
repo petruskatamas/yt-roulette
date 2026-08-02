@@ -61,10 +61,11 @@ One Next.js process serves both screens and holds the game in memory:
 ```
 src/
   app/            pages + API routes (the whole backend)
-  server/         game state singleton, YouTube scraping
+  server/         state (persistence), rules (marks/claims), http, host, yt (scraping)
   lib/            polling client, i18n, sound synthesis, helpers
   data/           search-pattern generators, bingo logic, challenge lists
-  views/          HostView (TV) and PlayerView (phone)
+  views/          HostView (TV) and PlayerView (phone) — orchestration only
+  components/     everything they render
   messages/       one file per language
 ```
 

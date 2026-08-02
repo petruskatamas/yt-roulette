@@ -1,4 +1,6 @@
-import { bad, buildCard, bump, getState, ok, readBody } from '@/server/game'
+import { bump, getState } from '@/server/state'
+import { bad, ok, readBody } from '@/server/http'
+import { buildCard } from '@/server/rules'
 
 export async function POST(req: Request) {
   const body = await readBody(req)

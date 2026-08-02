@@ -1,10 +1,10 @@
-import { en } from '../messages/en'
-import { es } from '../messages/es'
-import { fr } from '../messages/fr'
-import { hu } from '../messages/hu'
-import type { Locale, RelTime } from '../types'
+import { en } from '@/messages/en'
+import { es } from '@/messages/es'
+import { fr } from '@/messages/fr'
+import { hu } from '@/messages/hu'
+import type { Locale, RelTime } from '@/types'
 
-/** English is the source of truth: every other locale must satisfy this shape. */
+// English is the source of truth: every other locale must satisfy this shape.
 export type Messages = typeof en
 
 const ALL: Record<Locale, Messages> = { en, es, fr, hu }
@@ -18,7 +18,7 @@ export const localeOptions = LOCALES.map((id) => ({
   label: `${ALL[id].flag} ${ALL[id].nativeName}`,
 }))
 
-/** "2013-01-04" → locale-formatted date; passes through anything unparseable */
+// "2013-01-04" → locale-formatted date; passes through anything unparseable
 export function fmtDate(iso: string, t: Messages): string {
   const d = new Date(iso)
   if (!iso || Number.isNaN(d.getTime())) return iso

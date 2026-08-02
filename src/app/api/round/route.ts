@@ -1,4 +1,6 @@
-import { buildCard, bump, cardTexts, getState, ok, readBody, shuffled } from '@/server/game'
+import { bump, getState } from '@/server/state'
+import { ok, readBody } from '@/server/http'
+import { buildCard, cardTexts, shuffled } from '@/server/rules'
 
 const MODES = ['keep', 'shuffle', 'rewrite', 'new'] as const
 type Mode = (typeof MODES)[number]

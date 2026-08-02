@@ -1,6 +1,6 @@
-import { winningCells } from '../data/challenges'
-import type { Messages } from '../lib/i18n'
-import type { Cell } from '../types'
+import { winningCells } from '@/data/challenges'
+import type { Messages } from '@/lib/i18n'
+import type { Cell } from '@/types'
 
 type Props = {
   cells: Cell[]

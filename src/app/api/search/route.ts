@@ -1,4 +1,4 @@
-import { bad } from '@/server/game'
+import { bad, json } from '@/server/http'
 import { collect, fetchInitialData, parseCount, parseRelative } from '@/server/yt'
 import type { YtResult } from '@/types'
 
@@ -29,7 +29,7 @@ export async function GET(req: Request) {
   if (sort === 'date') ytUrl.searchParams.set('sp', 'CAI=')
 
   const data = await fetchInitialData(ytUrl)
-  if (!data) return Response.json({ error: 'fetch-failed' }, { status: 502 })
+  if (!data) return bad(502, 'fetch-failed')
   const renderers = collect<VideoRenderer>(data, 'videoRenderer')
 
   const seen = new Set<string>()
@@ -59,5 +59,5 @@ export async function GET(req: Request) {
     results.sort((a, b) => (a.views < 0 ? 1 : b.views < 0 ? -1 : a.views - b.views))
   }
 
-  return Response.json({ results })
+  return json({ results })
 }
